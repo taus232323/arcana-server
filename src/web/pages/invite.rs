@@ -33,18 +33,18 @@ async fn invite(
 		services.config.get_client_domain().to_string(),
 		services.config
 			.well_known
-			android_fdroid_download
+			.android_fdroid_download
 			.clone()
 			.map(|url| url.to_string()),
 		services.config
 			.well_known
-			android_gdroid_download
+			.android_gdroid_download
 			.clone()
 			.map(|url| url.to_string()),
 		services
 			.config
 			.well_known
-			ios_download
+			.ios_download
 			.clone()
 			.map(|url| url.to_string()),
 	)
