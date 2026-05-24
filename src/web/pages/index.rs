@@ -16,7 +16,7 @@ async fn index(State(services): State<crate::State>) -> Result<impl IntoResponse
 			client_domain: String,
 			android_fdroid_download: Option<String>,
 			android_gdroid_download: Option<String>,
-			ios_download: Option<String>,
+			ios_download: Option<String>
 		}
 	}
 
@@ -27,18 +27,18 @@ async fn index(State(services): State<crate::State>) -> Result<impl IntoResponse
 		services.config.get_client_domain().to_string(),
 		services.config
 			.well_known
-			android_fdroid_download
+			.android_fdroid_download
 			.clone()
 			.map(|url| url.to_string()),
 		services.config
 			.well_known
-			android_gdroid_download
+			.android_gdroid_download
 			.clone()
 			.map(|url| url.to_string()),
 		services
 			.config
 			.well_known
-			ios_download
+			.ios_download
 			.clone()
 			.map(|url| url.to_string()),
 	)
