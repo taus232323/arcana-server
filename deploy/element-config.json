@@ -2,7 +2,7 @@
   "default_server_name": "celesteai.ru",
   "default_server_config": {
     "m.homeserver": {
-      "base_url": "https://matrix.celesteai.ru",
+      "base_url": "https://arcana.celesteai.ru",
       "server_name": "celesteai.ru"
     }
   },

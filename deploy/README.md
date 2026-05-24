@@ -2,7 +2,7 @@
 
 This directory contains a deploy-ready setup for:
 
-- `matrix.celesteai.ru` -> Continuwuity homeserver
+- `arcana.celesteai.ru` -> Arcana client landing page and homeserver entrypoint
 - `chat.celesteai.ru` -> Element Web
 - `celesteai.ru/.well-known/matrix/*` -> static Matrix discovery
 
@@ -110,7 +110,7 @@ make matrix-logs
 After start, check:
 
 ```bash
-curl -i https://matrix.celesteai.ru/_matrix/client/versions
+curl -i https://arcana.celesteai.ru/_matrix/client/versions
 curl -i https://celesteai.ru/.well-known/matrix/server
 curl -i https://celesteai.ru/.well-known/matrix/client
 curl -I https://chat.celesteai.ru
@@ -119,7 +119,7 @@ curl -I https://chat.celesteai.ru
 For email flows, also verify:
 
 ```bash
-curl -i https://matrix.celesteai.ru/_continuwuity/3pid/email/validate
+curl -i https://arcana.celesteai.ru/_continuwuity/3pid/email/validate
 ```
 
 Then test from a client:

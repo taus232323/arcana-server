@@ -6,7 +6,7 @@
 Текущие параметры:
 
 - Matrix `server_name`: `celesteai.ru`
-- Homeserver API: `https://matrix.celesteai.ru`
+- Homeserver API: `https://arcana.celesteai.ru`
 - Web-клиент: `https://chat.celesteai.ru`
 - Client discovery: `https://celesteai.ru/.well-known/matrix/client`
 - Server discovery: `https://celesteai.ru/.well-known/matrix/server`
@@ -135,7 +135,7 @@ make matrix-logs
 Обычный путь через клиент:
 
 1. Открыть Matrix-клиент, который поддерживает registration token.
-2. Выбрать сервер `celesteai.ru` или `https://matrix.celesteai.ru`.
+2. Выбрать сервер `celesteai.ru` или `https://arcana.celesteai.ru`.
 3. Начать регистрацию.
 4. Ввести username и password.
 5. Ввести first-run registration token из логов.
@@ -149,7 +149,7 @@ fallback.
 Сначала создать UIAA-сессию:
 
 ```bash
-curl -sS https://matrix.celesteai.ru/_matrix/client/v3/register \
+curl -sS https://arcana.celesteai.ru/_matrix/client/v3/register \
   -H 'Content-Type: application/json' \
   -d '{
     "username": "admin",
@@ -163,7 +163,7 @@ curl -sS https://matrix.celesteai.ru/_matrix/client/v3/register \
 Затем завершить регистрацию с токеном из логов:
 
 ```bash
-curl -sS https://matrix.celesteai.ru/_matrix/client/v3/register \
+curl -sS https://arcana.celesteai.ru/_matrix/client/v3/register \
   -H 'Content-Type: application/json' \
   -d '{
     "username": "admin",
@@ -188,8 +188,8 @@ curl -sS https://matrix.celesteai.ru/_matrix/client/v3/register \
 Проверки с любой машины, где есть доступ в интернет:
 
 ```bash
-curl -i https://matrix.celesteai.ru/_matrix/client/versions
-curl -i https://matrix.celesteai.ru/_matrix/client/v3/login
+curl -i https://arcana.celesteai.ru/_matrix/client/versions
+curl -i https://arcana.celesteai.ru/_matrix/client/v3/login
 curl -i https://celesteai.ru/.well-known/matrix/client
 curl -i https://celesteai.ru/.well-known/matrix/server
 curl -I https://chat.celesteai.ru
@@ -199,7 +199,7 @@ curl -I https://chat.celesteai.ru
 
 - `/_matrix/client/versions` отвечает HTTP 200 и JSON.
 - `/_matrix/client/v3/login` показывает flow `password` + `email_code`.
-- `/.well-known/matrix/client` указывает на `https://matrix.celesteai.ru`.
+- `/.well-known/matrix/client` указывает на `https://arcana.celesteai.ru`.
 - `/.well-known/matrix/client` отдает `Access-Control-Allow-Origin: *`.
 - `/.well-known/matrix/server` указывает на `matrix.celesteai.ru:443`.
 - Web-клиент открывается по HTTPS.
@@ -207,7 +207,7 @@ curl -I https://chat.celesteai.ru
 Проверить, что email validation endpoint проксируется на homeserver:
 
 ```bash
-curl -i https://matrix.celesteai.ru/_continuwuity/3pid/email/validate
+curl -i https://arcana.celesteai.ru/_continuwuity/3pid/email/validate
 ```
 
 Без query-параметров bad request или страница ошибки допустимы. Proxy 404

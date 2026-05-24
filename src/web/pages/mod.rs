@@ -1,4 +1,5 @@
 mod components;
+pub(super) mod assetlinks;
 pub(super) mod debug;
 pub(super) mod invite;
 pub(super) mod index;

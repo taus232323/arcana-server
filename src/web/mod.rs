@@ -83,6 +83,7 @@ pub fn build() -> Router<state::State> {
 	use pages::*;
 
 	Router::new()
+		.merge(assetlinks::build())
 		.merge(index::build())
 		.merge(invite::build())
 		.nest(

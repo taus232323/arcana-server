@@ -11,7 +11,7 @@ allow_registration = true
 # recaptcha_private_site_key = "..."
 
 [global.well_known]
-client = "https://matrix.celesteai.ru"
+client = "https://arcana.celesteai.ru"
 server = "matrix.celesteai.ru:443"
 
 # SMTP is supplied from the local `.env` file, which is mounted into the
