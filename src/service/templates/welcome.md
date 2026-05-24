@@ -1,6 +1,6 @@
 ## Thank you for trying out Continuwuity!
 
-Your new homeserver is ready to use! {%- if config.allow_federation %} To make sure you can federate with the rest of the Matrix network, consider checking your domain (`{{ domain }}`) with a federation tester like [this one](https://connectivity-tester.mtrnord.blog/). {%- endif %}
+Your new homeserver is ready to use! {%- if config.allow_federation %} To make sure federation works, consider checking your domain (`{{ client_domain }}`) with a federation tester like [this one](https://connectivity-tester.mtrnord.blog/). {%- endif %}
 
 {% if config.get_config_file_token().is_some() -%}
 Users may now create accounts normally using the configured registration token.
@@ -17,10 +17,9 @@ You've disabled registration. To create more accounts, use the `!admin users cre
 This room is your server's admin room. You can send messages starting with `!admin` in this room to perform a range of administrative actions.
 To view a list of available commands, send the following message: `!admin --help`
 
-Project chatrooms:
-> Support chatroom: https://matrix.to/#/#continuwuity:continuwuity.org
-> Update announcements: https://matrix.to/#/#announcements:continuwuity.org
-> Other chatrooms: https://matrix.to/#/#space:continuwuity.org
+Project links:
+> Install page: https://{{ client_domain }}/
+> Invite links: https://{{ client_domain }}/invite/<token>
 >
 
 Helpful links:

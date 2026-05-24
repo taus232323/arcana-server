@@ -2190,6 +2190,21 @@ pub struct WellKnownConfig {
 	/// example: "https://matrix.example.com"
 	pub client: Option<Url>,
 
+	/// Android download URL for the F-Droid build of the client.
+	///
+	/// This can point to a direct APK download or to a landing page that hosts
+	/// the APK download.
+	pub android_fdroid_download: Option<Url>,
+
+	/// Android download URL for the G-Droid build of the client.
+	///
+	/// This can point to a direct APK download or to a landing page that hosts
+	/// the APK download.
+	pub android_gdroid_download: Option<Url>,
+
+	/// Optional future download URL for iPhone / store distribution.
+	pub ios_download: Option<Url>,
+
 	/// The server base domain of the URL with a specific port that the server
 	/// well-known file will serve. This should contain a port at the end, and
 	/// should not be a URL.

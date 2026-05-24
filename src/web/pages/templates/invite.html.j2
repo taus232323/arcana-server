@@ -1,0 +1,64 @@
+{% extends "_layout.html.j2" %}
+
+{%- block title -%}
+Open Arcana invite
+{%- endblock -%}
+
+{%- block head -%}
+<link rel="stylesheet" href="/_continuwuity/resources/index.css">
+{%- endblock -%}
+
+{%- block content -%}
+<div class="panel landing-panel">
+    <section class="hero">
+        <div class="hero-grid">
+            <div class="hero-brand">
+                <span class="hero-badge">Arcana invite</span>
+                <img class="hero-logo" src="/_continuwuity/resources/logo.svg" alt="">
+                <h1>Invite received</h1>
+                <p class="hero-copy">
+                    This invite can open in the Arcana app if it is installed. If not, you can still download the client and continue from there.
+                </p>
+                <p class="fine-print">
+                    The browser fallback page is <span class="token-chip">{{ client_domain }}/invite/{{ token }}</span>.
+                </p>
+                <span class="token-chip">{{ token }}</span>
+                <div class="cta-row">
+                    <a class="cta primary" href="arcana://invite/{{ token }}?web={{ client_domain }}/invite/{{ token }}">Open in Arcana</a>
+                    {%- if let Some(url) = android_fdroid_download %}
+                    <a class="cta secondary" href="{{ url }}">Download for F-Droid</a>
+                    {%- else %}
+                    <span class="cta secondary disabled">F-Droid download coming soon</span>
+                    {%- endif %}
+                </div>
+                <p class="fine-print">
+                    {%- if let Some(url) = android_gdroid_download %}
+                    Alternate Android download: <a href="{{ url }}">G-Droid</a>.
+                    {%- else %}
+                    Alternate Android download will be linked here later.
+                    {%- endif %}
+                </p>
+            </div>
+
+            <aside class="feature-grid" aria-label="Invite details">
+                <div class="feature-card">
+                    <h2>Open in app</h2>
+                    <p>When app links are enabled on the device, the invite can jump straight into the messenger.</p>
+                </div>
+                <div class="feature-card">
+                    <h2>Fallback download</h2>
+                    <p>If the app is not installed yet, the buttons below take you to the client download path.</p>
+                </div>
+                <div class="feature-card">
+                    <h2>Server</h2>
+                    <p>You're coming into <span class="token-chip">{{ server_name }}</span>.</p>
+                </div>
+                <div class="feature-card">
+                    <h2>Web fallback</h2>
+                    <p>The same Arcana URL can serve this page now and route into the app later, without changing the invite format.</p>
+                </div>
+            </aside>
+        </div>
+    </section>
+</div>
+{%- endblock content -%}

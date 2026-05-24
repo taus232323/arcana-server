@@ -1,18 +1,24 @@
-use axum::{Router, extract::State, response::IntoResponse, routing::get};
+use axum::{
+	Router,
+	extract::{Path, State},
+	response::IntoResponse,
+	routing::get,
+};
 
 use crate::{WebError, template};
 
 pub(crate) fn build() -> Router<crate::State> {
-	Router::new()
-		.route("/", get(index))
-		.route("/_continuwuity/", get(index))
+	Router::new().route("/invite/{token}", get(invite))
 }
 
-async fn index(State(services): State<crate::State>) -> Result<impl IntoResponse, WebError> {
+async fn invite(
+	State(services): State<crate::State>,
+	Path(token): Path<String>,
+) -> Result<impl IntoResponse, WebError> {
 	template! {
-		struct Index<'a> use "index.html.j2" {
+		struct Invite<'a> use "invite.html.j2" {
 			server_name: &'a str,
-			first_run: bool,
+			token: String,
 			client_domain: String,
 			android_fdroid_download: Option<String>,
 			android_gdroid_download: Option<String>,
@@ -20,10 +26,10 @@ async fn index(State(services): State<crate::State>) -> Result<impl IntoResponse
 		}
 	}
 
-	Ok(Index::new(
+	Ok(Invite::new(
 		&services,
 		services.globals.server_name().as_str(),
-		services.firstrun.is_first_run(),
+		token,
 		services.config.get_client_domain().to_string(),
 		services.config
 			.well_known

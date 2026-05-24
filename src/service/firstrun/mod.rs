@@ -125,7 +125,7 @@ impl Service {
 		#[template(path = "welcome.md")]
 		struct WelcomeMessage<'a> {
 			config: &'a Dep<config::Service>,
-			domain: &'a str,
+			client_domain: &'a str,
 		}
 
 		// If first run mode isn't active, do nothing.
@@ -136,9 +136,11 @@ impl Service {
 		self.services.admin.make_user_admin(user).boxed().await?;
 
 		// Send the welcome message
+		let client_domain = self.services.config.get_client_domain().to_string();
+
 		let welcome_message = WelcomeMessage {
 			config: &self.services.config,
-			domain: self.services.globals.server_name().as_str(),
+			client_domain: client_domain.as_str(),
 		}
 		.render()
 		.expect("should have been able to render welcome message template");
@@ -187,10 +189,11 @@ impl Service {
 		eprintln!(
 			"In order to use your new homeserver, you need to create its first user account."
 		);
+		let client_domain = self.services.config.get_client_domain().to_string();
 		eprintln!(
-			"Open your Matrix client of choice and register an account on {} using the \
-			 registration token {} . Pick your own username and password!",
-			self.services.globals.server_name().bold().green(),
+			"Open the Arcana install page at {} to continue. Use the registration token {} \
+			 when prompted.",
+			client_domain.bold().green(),
 			self.first_account_token.as_str().bold().green()
 		);
 
@@ -253,7 +256,7 @@ impl Service {
 
 		eprintln!(
 			"{} https://matrix.org/ecosystem/clients/",
-			"Find a list of Matrix clients here:".bold()
+			"Find a list of clients here:".bold()
 		);
 
 		if self
@@ -312,7 +315,11 @@ impl Service {
 				 to open the console."
 			);
 		}
-		eprintln!("If you need assistance setting up your homeserver, make a Matrix account on another homeserver and join our chatroom: https://matrix.to/#/#continuwuity:continuwuity.org");
+		eprintln!(
+			"If you need assistance setting up your homeserver, use the install page at {} \
+			 or the documentation at https://continuwuity.org/.",
+			client_domain.bold().green()
+		);
 
 		eprintln!("{}", "============".bold());
 	}

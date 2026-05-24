@@ -84,6 +84,7 @@ pub fn build() -> Router<state::State> {
 
 	Router::new()
 		.merge(index::build())
+		.merge(invite::build())
 		.nest(
 			"/_continuwuity/",
 			Router::new()
