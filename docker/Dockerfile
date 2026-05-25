@@ -196,8 +196,12 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
         jq -r ".packages[] | select(.name == \"$PACKAGE\") | .targets[] | select( .kind | map(. == \"bin\") | any ) | .name"))
     for BINARY in "${BINARIES[@]}"; do
         echo $BINARY
-        xx-verify $TARGET_DIR/$(xx-cargo --print-target-triple)/${RUST_PROFILE_DIR}/$BINARY
-        cp $TARGET_DIR/$(xx-cargo --print-target-triple)/${RUST_PROFILE_DIR}/$BINARY /out/sbin/$BINARY
+        BINARY_PATH=$TARGET_DIR/$(xx-cargo --print-target-triple)/${RUST_PROFILE_DIR}/$BINARY
+        if [[ ! -f "$BINARY_PATH" ]]; then
+            BINARY_PATH=$TARGET_DIR/${RUST_PROFILE_DIR}/$BINARY
+        fi
+        xx-verify "$BINARY_PATH"
+        cp "$BINARY_PATH" /out/sbin/$BINARY
     done
 EOF
 
