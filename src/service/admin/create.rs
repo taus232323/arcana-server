@@ -426,7 +426,8 @@ async fn ensure_direct_account_data(
 		.map(|event| event.content.0)
 		.unwrap_or_default();
 
-	let room_ids = direct_rooms.entry(peer_user.to_owned()).or_default();
+	let peer_user_key = peer_user.to_owned().into();
+	let room_ids = direct_rooms.entry(peer_user_key).or_default();
 	if !room_ids.iter().any(|existing| existing == room_id) {
 		room_ids.push(room_id.to_owned());
 	}
