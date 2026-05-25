@@ -226,12 +226,14 @@ pub async fn create_or_get_direct_room(
 		return Err!("Cannot create a direct room with yourself");
 	}
 
+	let recipient_user_key = recipient_user.to_owned();
+
 	if let Ok(direct_event) = services
 		.account_data
 		.get_global::<DirectEvent>(sender_user, GlobalAccountDataEventType::Direct)
 		.await
 	{
-		if let Some(room_ids) = direct_event.content.0.get(recipient_user) {
+		if let Some(room_ids) = direct_event.content.0.get(&recipient_user_key) {
 			for room_id in room_ids {
 				if services.rooms.state_cache.is_joined(sender_user, room_id).await
 					&& services.rooms.state_cache.room_joined_count(room_id).await.unwrap_or(0) <= 2
