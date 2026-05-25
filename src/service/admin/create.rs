@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use conduwuit::{Err, Result, info, pdu::PduBuilder};
 use futures::{FutureExt, StreamExt};
 use ruma::{
-	RoomId, RoomVersionId, UserId,
+	OwnedRoomId, RoomId, RoomVersionId, UserId,
 	events::{GlobalAccountDataEventType, direct::DirectEvent},
 	events::room::{
 		canonical_alias::RoomCanonicalAliasEventContent,
@@ -221,7 +221,7 @@ pub async fn create_or_get_direct_room(
 	services: &Services,
 	sender_user: &UserId,
 	recipient_user: &UserId,
-) -> Result<RoomId> {
+) -> Result<OwnedRoomId> {
 	if sender_user == recipient_user {
 		return Err!("Cannot create a direct room with yourself");
 	}
