@@ -35,6 +35,12 @@ pub enum UserCommand {
 		username: String,
 	},
 
+	/// Issue a shareable invite link for a direct message with a user.
+	IssueInviteLink {
+		/// Username of the user who may be invited
+		username: String,
+	},
+
 	/// Get a user's associated email address.
 	GetEmail {
 		user_id: String,

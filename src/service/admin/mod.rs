@@ -13,7 +13,7 @@ use conduwuit::{Err, SyncRwLock, utils};
 use conduwuit_core::{
 	Error, Event, Result, Server, debug, err, error, error::default_log, pdu::PduBuilder,
 };
-pub use create::create_admin_room;
+pub use create::{create_admin_room, create_or_get_direct_room};
 use futures::{Future, FutureExt, StreamExt, TryFutureExt};
 use loole::{Receiver, Sender};
 use ruma::{

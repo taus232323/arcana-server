@@ -29,6 +29,7 @@ use ruma::{
 
 use crate::{
 	admin_command, get_room_info,
+	service::admin::create_or_get_direct_room,
 	utils::{parse_active_local_user_id, parse_local_user_id},
 };
 
@@ -320,6 +321,38 @@ pub(super) async fn issue_password_reset_link(&self, username: String) -> Result
 		.append_pair(RESET_TOKEN_QUERY_PARAM, &token.token);
 
 	self.write_str(&format!("Password reset link issued for {username}: {reset_url}"))
+		.await?;
+
+	Ok(())
+}
+
+#[admin_command]
+pub(super) async fn issue_invite_link(&self, username: String) -> Result {
+	use conduwuit_service::invites::INVITE_WEB_PATH;
+
+	self.bail_restricted()?;
+
+	let target_user = parse_active_local_user_id(self.services, &username).await?;
+	let sender_user = self.sender_or_service_user().to_owned();
+	let room_id = create_or_get_direct_room(self.services, &sender_user, &target_user).await?;
+	let token = self
+		.services
+		.invites
+		.issue_token(sender_user, target_user, room_id.clone())
+		.await?;
+
+	let mut invite_url = self
+		.services
+		.config
+		.get_client_domain()
+		.join(INVITE_WEB_PATH)
+		.unwrap();
+	invite_url
+		.path_segments_mut()
+		.expect("invite URL should support path segments")
+		.push(token.token.as_str());
+
+	self.write_str(&format!("Invite link issued for {room_id}: {invite_url}"))
 		.await?;
 
 	Ok(())

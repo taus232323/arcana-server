@@ -112,6 +112,8 @@ pub fn build(router: Router<State>, server: &Server) -> Router<State> {
 		.ruma_route(&client::create_receipt_route)
 		.ruma_route(&client::create_typing_event_route)
 		.ruma_route(&client::create_room_route)
+		.route("/api/invite/{token}", get(client::arcana_invite::get_invite))
+		.route("/api/invite/{token}/accept", post(client::arcana_invite::accept_invite))
 		.ruma_route(&client::redact_event_route)
 		.ruma_route(&client::report_event_route)
 		.ruma_route(&client::report_room_route)

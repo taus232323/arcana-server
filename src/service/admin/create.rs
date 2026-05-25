@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
 
-use conduwuit::{Result, info, pdu::PduBuilder};
-use futures::FutureExt;
+use conduwuit::{Err, Result, info, pdu::PduBuilder};
+use futures::{FutureExt, StreamExt};
 use ruma::{
-	RoomId, RoomVersionId,
+	RoomId, RoomVersionId, UserId,
+	events::{GlobalAccountDataEventType, direct::DirectEvent},
 	events::room::{
 		canonical_alias::RoomCanonicalAliasEventContent,
 		create::RoomCreateEventContent,
@@ -214,4 +215,228 @@ pub async fn create_admin_room(services: &Services) -> Result {
 		.await?;
 
 	Ok(())
+}
+
+pub async fn create_or_get_direct_room(
+	services: &Services,
+	sender_user: &UserId,
+	recipient_user: &UserId,
+) -> Result<RoomId> {
+	if sender_user == recipient_user {
+		return Err!("Cannot create a direct room with yourself");
+	}
+
+	if let Ok(direct_event) = services
+		.account_data
+		.get_global::<DirectEvent>(sender_user, GlobalAccountDataEventType::Direct)
+		.await
+	{
+		if let Some(room_ids) = direct_event.content.0.get(recipient_user) {
+			for room_id in room_ids {
+				if services.rooms.state_cache.is_joined(sender_user, room_id).await
+					&& services.rooms.state_cache.room_joined_count(room_id).await.unwrap_or(0) <= 2
+				{
+					info!("Reusing direct room {} for {} and {}", room_id, sender_user, recipient_user);
+					return Ok(room_id.to_owned());
+				}
+			}
+		}
+	}
+
+	let shared_rooms = services.rooms.state_cache.get_shared_rooms(sender_user, recipient_user);
+	futures::pin_mut!(shared_rooms);
+	while let Some(room_id) = shared_rooms.next().await {
+		if services.rooms.state_cache.room_joined_count(room_id).await.unwrap_or(0) <= 2 {
+			info!("Reusing shared room {} for {} and {}", room_id, sender_user, recipient_user);
+			ensure_direct_account_data(services, sender_user, recipient_user, room_id).await?;
+			ensure_direct_account_data(services, recipient_user, sender_user, room_id).await?;
+			return Ok(room_id.to_owned());
+		}
+	}
+
+	let room_id = RoomId::new(services.globals.server_name());
+	let room_version = &services.server.config.default_room_version;
+
+	let _short_id = services
+		.rooms
+		.short
+		.get_or_create_shortroomid(&room_id)
+		.await;
+	let state_lock = services.rooms.state.mutex.lock(&room_id).await;
+
+	let create_content = {
+		use RoomVersionId::*;
+		match room_version {
+			| V1 | V2 | V3 | V4 | V5 | V6 | V7 | V8 | V9 | V10 =>
+				RoomCreateEventContent::new_v1(sender_user.into()),
+			| V11 => RoomCreateEventContent::new_v11(),
+			| _ => RoomCreateEventContent::new_v12(),
+		}
+	};
+
+	info!("Creating direct room {} with version {}", room_id, room_version);
+
+	services
+		.rooms
+		.timeline
+		.build_and_append_pdu(
+			PduBuilder::state(String::new(), &RoomCreateEventContent {
+				federate: true,
+				predecessor: None,
+				room_version: room_version.clone(),
+				..create_content
+			}),
+			sender_user,
+			Some(&room_id),
+			&state_lock,
+		)
+		.boxed()
+		.await?;
+
+	services
+		.rooms
+		.timeline
+		.build_and_append_pdu(
+			PduBuilder::state(
+				String::from(sender_user),
+				&RoomMemberEventContent {
+					displayname: services.users.displayname(sender_user).await.ok(),
+					avatar_url: services.users.avatar_url(sender_user).await.ok(),
+					blurhash: services.users.blurhash(sender_user).await.ok(),
+					is_direct: Some(true),
+					..RoomMemberEventContent::new(MembershipState::Join)
+				},
+			),
+			sender_user,
+			Some(&room_id),
+			&state_lock,
+		)
+		.boxed()
+		.await?;
+
+	services
+		.rooms
+		.timeline
+		.build_and_append_pdu(
+			PduBuilder::state(
+				String::new(),
+				&RoomPowerLevelsEventContent {
+					users: BTreeMap::from_iter([(sender_user.to_owned(), 100.into())]),
+					..Default::default()
+				},
+			),
+			sender_user,
+			Some(&room_id),
+			&state_lock,
+		)
+		.boxed()
+		.await?;
+
+	services
+		.rooms
+		.timeline
+		.build_and_append_pdu(
+			PduBuilder::state(String::new(), &RoomJoinRulesEventContent::new(JoinRule::Invite)),
+			sender_user,
+			Some(&room_id),
+			&state_lock,
+		)
+		.boxed()
+		.await?;
+
+	services
+		.rooms
+		.timeline
+		.build_and_append_pdu(
+			PduBuilder::state(
+				String::new(),
+				&RoomHistoryVisibilityEventContent::new(HistoryVisibility::Shared),
+			),
+			sender_user,
+			Some(&room_id),
+			&state_lock,
+		)
+		.boxed()
+		.await?;
+
+	services
+		.rooms
+		.timeline
+		.build_and_append_pdu(
+			PduBuilder::state(
+				String::new(),
+				&RoomGuestAccessEventContent::new(GuestAccess::Forbidden),
+			),
+			sender_user,
+			Some(&room_id),
+			&state_lock,
+		)
+		.boxed()
+		.await?;
+
+	drop(state_lock);
+
+	let state_lock = services.rooms.state.mutex.lock(&room_id).await;
+	services
+		.rooms
+		.timeline
+		.build_and_append_pdu(
+			PduBuilder::state(
+				recipient_user.to_string(),
+				&RoomMemberEventContent {
+					displayname: services.users.displayname(recipient_user).await.ok(),
+					avatar_url: services.users.avatar_url(recipient_user).await.ok(),
+					blurhash: services.users.blurhash(recipient_user).await.ok(),
+					is_direct: Some(true),
+					reason: None,
+					..RoomMemberEventContent::new(MembershipState::Invite)
+				},
+			),
+			sender_user,
+			Some(&room_id),
+			&state_lock,
+		)
+		.boxed()
+		.await?;
+
+	ensure_direct_account_data(services, sender_user, recipient_user, &room_id).await?;
+	ensure_direct_account_data(services, recipient_user, sender_user, &room_id).await?;
+
+	info!("Created direct room {} for {} and {}", room_id, sender_user, recipient_user);
+
+	Ok(room_id)
+}
+
+async fn ensure_direct_account_data(
+	services: &Services,
+	user_id: &UserId,
+	peer_user: &UserId,
+	room_id: &RoomId,
+) -> Result<()> {
+	let mut direct_rooms = services
+		.account_data
+		.get_global::<DirectEvent>(user_id, GlobalAccountDataEventType::Direct)
+		.await
+		.map(|event| event.content.0)
+		.unwrap_or_default();
+
+	let room_ids = direct_rooms.entry(peer_user.to_owned()).or_default();
+	if !room_ids.iter().any(|existing| existing == room_id) {
+		room_ids.push(room_id.to_owned());
+	}
+
+	let data = serde_json::json!({
+		"type": "m.direct",
+		"content": direct_rooms,
+	});
+
+	services
+		.account_data
+		.update(
+			None,
+			user_id,
+			GlobalAccountDataEventType::Direct.to_string().into(),
+			&data,
+		)
+		.await
 }

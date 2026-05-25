@@ -26,6 +26,7 @@ pub mod globals;
 pub mod key_backups;
 pub mod mailer;
 pub mod media;
+pub mod invites;
 pub mod moderation;
 pub mod password_reset;
 pub mod presence;
