@@ -111,10 +111,12 @@ pub(crate) async fn accept_invite(
 		return Err!(Request(NotFound("Invite token not found.")));
 	};
 
-	let access_token = query
+	let Some(access_token) = query
 		.access_token
 		.or_else(|| bearer_token(&headers).map(str::to_owned))
-		.ok_or_else(|| Err!(Request(MissingToken("Missing access token."))))?;
+	else {
+		return Err!(Request(MissingToken("Missing access token.")));
+	};
 
 	let (sender_user, _device_id) = services
 		.users

@@ -47,7 +47,6 @@ pub(super) use account::*;
 pub(super) use account_data::*;
 pub(super) use admin::*;
 pub(super) use alias::*;
-pub(super) use arcana_invite::*;
 pub(super) use appservice::*;
 pub(super) use backup::*;
 pub(super) use capabilities::*;
