@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use super::join_room_by_id_helper;
 
 #[derive(Debug, Deserialize)]
-struct ArcanaInviteAcceptQuery {
+pub(crate) struct ArcanaInviteAcceptQuery {
 	access_token: Option<String>,
 }
 
@@ -49,12 +49,6 @@ pub struct ArcanaInviteAcceptResponse {
 	room_id: String,
 	is_new: Option<bool>,
 	open_room: Option<bool>,
-}
-
-pub(crate) fn build() -> axum::Router<crate::State> {
-	axum::Router::new()
-		.route("/api/invite/{token}", axum::routing::get(get_invite))
-		.route("/api/invite/{token}/accept", axum::routing::post(accept_invite))
 }
 
 pub(crate) async fn get_invite(
