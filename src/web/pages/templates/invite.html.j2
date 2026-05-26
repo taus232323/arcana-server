@@ -30,6 +30,11 @@ Open Arcana invite
                     {%- else %}
                     <span class="cta secondary disabled">F-Droid download coming soon</span>
                     {%- endif %}
+                    {%- if let Some(url) = ios_download %}
+                    <a class="cta secondary" href="{{ url }}">Download for iPhone</a>
+                    {%- else %}
+                    <span class="cta secondary disabled">iPhone download coming soon</span>
+                    {%- endif %}
                 </div>
                 <p class="fine-print">
                     {%- if let Some(url) = android_gdroid_download %}

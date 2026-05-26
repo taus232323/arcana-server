@@ -1,13 +1,13 @@
 use axum::{
 	extract::{Path, Query, State},
 	http::header::AUTHORIZATION,
-	response::IntoResponse,
 	Json,
 };
+use conduwuit::{Err, Result};
 use http::HeaderMap;
 use serde::{Deserialize, Serialize};
 
-use crate::{WebError, client::join_room_by_id_helper};
+use super::join_room_by_id_helper;
 
 #[derive(Debug, Deserialize)]
 struct ArcanaInviteAcceptQuery {
@@ -60,9 +60,9 @@ pub(crate) fn build() -> axum::Router<crate::State> {
 pub(crate) async fn get_invite(
 	State(services): State<crate::State>,
 	Path(token): Path<String>,
-) -> Result<impl IntoResponse, WebError> {
+) -> Result<Json<ArcanaInviteResponse>> {
 	let Some(token) = services.invites.check_token(&token).await else {
-		return Err(WebError::NotFound);
+		return Err!(Request(NotFound("Invite token not found.")));
 	};
 
 	let room_name = services.rooms.state_accessor.get_name(&token.info.room_id).await.ok();
@@ -106,26 +106,25 @@ pub(crate) async fn accept_invite(
 	headers: HeaderMap,
 	Path(token): Path<String>,
 	Query(query): Query<ArcanaInviteAcceptQuery>,
-) -> Result<impl IntoResponse, WebError> {
+) -> Result<Json<ArcanaInviteAcceptResponse>> {
 	let Some(token) = services.invites.check_token(&token).await else {
-		return Err(WebError::NotFound);
+		return Err!(Request(NotFound("Invite token not found.")));
 	};
 
 	let access_token = query
 		.access_token
 		.or_else(|| bearer_token(&headers).map(str::to_owned))
-		.ok_or_else(|| WebError::BadRequest("Missing access token.".to_owned()))?;
+		.ok_or_else(|| err!(Request(MissingToken("Missing access token."))))?;
 
 	let (sender_user, _device_id) = services
 		.users
 		.find_from_token(&access_token)
-		.await
-		.map_err(WebError::from)?;
+		.await?;
 
 	if sender_user != token.info.target {
-		return Err(WebError::BadRequest(
-			"This invite is not addressed to the authenticated user.".to_owned(),
-		));
+		return Err!(Request(Forbidden(
+			"This invite is not addressed to the authenticated user."
+		)));
 	}
 
 	let was_joined = services
@@ -143,8 +142,7 @@ pub(crate) async fn accept_invite(
 			&[],
 			&None,
 		)
-		.await
-		.map_err(WebError::from)?;
+		.await?;
 	}
 
 	services.invites.mark_token_used(&token.token).await;
