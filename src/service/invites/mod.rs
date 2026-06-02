@@ -4,7 +4,7 @@ use std::{sync::Arc, time::SystemTime};
 
 use conduwuit::{Err, Result, utils};
 use data::{Data, InviteTokenInfo};
-use ruma::{OwnedRoomId, OwnedUserId};
+use ruma::OwnedUserId;
 
 use crate::{Dep, globals};
 

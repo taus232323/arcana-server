@@ -26,6 +26,7 @@ async fn invite(
 		.as_ref()
 		.map(ToString::to_string)
 		.unwrap_or_default();
+	let has_room_id = !room_id.is_empty();
 
 	template! {
 		struct Invite<'a> use "invite.html.j2" {
@@ -33,6 +34,7 @@ async fn invite(
 			token: String,
 			inviter: String,
 			room_id: String,
+			has_room_id: bool,
 			client_domain: String,
 			android_store_download: Option<String>,
 			android_fdroid_download: Option<String>,
@@ -46,6 +48,7 @@ async fn invite(
 		token_string,
 		inviter,
 		room_id,
+		has_room_id,
 		services.config.get_client_domain().to_string(),
 		services
 			.config

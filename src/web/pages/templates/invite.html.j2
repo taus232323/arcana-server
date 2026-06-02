@@ -18,7 +18,7 @@ Open Arcana invite
                 <h1>Invite received</h1>
                 <p class="hero-copy">
                     This invite opens Arcana and can take you straight into a chat with <span class="token-chip">{{ inviter }}</span>.
-                    {%- if room_id %}
+                    {%- if has_room_id %}
                     It is already linked to room <span class="token-chip">{{ room_id }}</span>.
                     {%- endif %}
                 </p>
