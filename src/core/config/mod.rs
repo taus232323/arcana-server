@@ -2190,19 +2190,17 @@ pub struct WellKnownConfig {
 	/// example: "https://matrix.example.com"
 	pub client: Option<Url>,
 
-	/// Android download URL for the F-Droid build of the client.
+	/// Main Android download URL for the client.
 	///
 	/// This can point to a direct APK download or to a landing page that hosts
 	/// the APK download.
+	pub android_store_download: Option<Url>,
+
+	/// Secondary Android download URL for alternate distribution, such as
+	/// F-Droid or a Huawei-friendly APK mirror.
 	pub android_fdroid_download: Option<Url>,
 
-	/// Android download URL for the G-Droid build of the client.
-	///
-	/// This can point to a direct APK download or to a landing page that hosts
-	/// the APK download.
-	pub android_gdroid_download: Option<Url>,
-
-	/// Optional future download URL for iPhone / store distribution.
+	/// iOS download URL for the client.
 	pub ios_download: Option<Url>,
 
 	/// The server base domain of the URL with a specific port that the server

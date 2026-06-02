@@ -1869,6 +1869,22 @@
 #
 #server =
 
+# Main Android download URL for the client.
+#
+# This can point to a direct APK download or to a landing page that hosts
+# the APK download.
+#
+#android_store_download =
+
+# Secondary Android download URL for alternate distribution, such as
+# F-Droid or a Huawei-friendly APK mirror.
+#
+#android_fdroid_download =
+
+# iOS download URL for the client.
+#
+#ios_download =
+
 # URL to a support page for the server, which will be served as part of
 # the MSC1929 server support endpoint at /.well-known/matrix/support.
 # Will be included alongside any contact information

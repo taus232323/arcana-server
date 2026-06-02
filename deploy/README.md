@@ -58,8 +58,7 @@ an explicit `username`, the created Matrix ID will default to something like
 SMTP credentials are now supplied through the local `.env` file in the
 repository root, not committed to git.
 
-1. Copy [`.env.example`](</Users/taus/Projects/continuwuity/.env.example>) to
-   `../.env` from this directory.
+1. Copy [`.env.example`](../.env.example) to `../.env` from this directory.
 2. Fill in your real Yandex app password.
 3. Keep `deploy/continuwuity.toml` unchanged unless you want to change the
    registration policy.

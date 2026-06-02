@@ -31,9 +31,9 @@ async fn invite(
 			target: String,
 			room_id: String,
 			client_domain: String,
+			android_store_download: Option<String>,
 			android_fdroid_download: Option<String>,
-			android_gdroid_download: Option<String>,
-			ios_download: Option<String>
+			ios_download: Option<String>,
 		}
 	}
 
@@ -45,14 +45,16 @@ async fn invite(
 		target,
 		room_id,
 		services.config.get_client_domain().to_string(),
-		services.config
+		services
+			.config
 			.well_known
-			.android_fdroid_download
+			.android_store_download
 			.clone()
 			.map(|url| url.to_string()),
-		services.config
+		services
+			.config
 			.well_known
-			.android_gdroid_download
+			.android_fdroid_download
 			.clone()
 			.map(|url| url.to_string()),
 		services

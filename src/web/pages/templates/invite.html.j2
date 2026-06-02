@@ -23,25 +23,74 @@ Open Arcana invite
                     The browser fallback page is <span class="token-chip">{{ client_domain }}/invite/{{ token }}</span>.
                 </p>
                 <span class="token-chip">{{ token }}</span>
-                <div class="cta-row">
-                    <a class="cta primary" href="arcana://invite/{{ token }}?web={{ client_domain }}/invite/{{ token }}">Open in Arcana</a>
-                    {%- if let Some(url) = android_fdroid_download %}
-                    <a class="cta secondary" href="{{ url }}">Download for F-Droid</a>
+                <div class="store-row" aria-label="Store links">
+                    {%- if let Some(url) = android_store_download %}
+                    <a class="store-link" href="{{ url }}" aria-label="Open Android download page">
+                        <span class="store-mark android" aria-hidden="true">A</span>
+                        <span class="store-copy">
+                            <span class="store-label">Android</span>
+                            <span class="store-meta">download</span>
+                        </span>
+                    </a>
                     {%- else %}
-                    <span class="cta secondary disabled">F-Droid download coming soon</span>
+                    <span class="store-link disabled" aria-hidden="true">
+                        <span class="store-mark android">A</span>
+                        <span class="store-copy">
+                            <span class="store-label">Android</span>
+                            <span class="store-meta">download soon</span>
+                        </span>
+                    </span>
+                    {%- endif %}
+                    {%- if let Some(url) = android_fdroid_download %}
+                    <a class="store-link" href="{{ url }}" aria-label="Open F-Droid download page">
+                        <span class="store-mark huawei" aria-hidden="true">F</span>
+                        <span class="store-copy">
+                            <span class="store-label">F-Droid</span>
+                            <span class="store-meta">Huawei</span>
+                        </span>
+                    </a>
+                    {%- else %}
+                    <span class="store-link disabled" aria-hidden="true">
+                        <span class="store-mark huawei">F</span>
+                        <span class="store-copy">
+                            <span class="store-label">F-Droid</span>
+                            <span class="store-meta">Huawei soon</span>
+                        </span>
+                    </span>
                     {%- endif %}
                     {%- if let Some(url) = ios_download %}
-                    <a class="cta secondary" href="{{ url }}">Download for iPhone</a>
+                    <a class="store-link" href="{{ url }}" aria-label="Open iOS download page">
+                        <span class="store-mark ios" aria-hidden="true">i</span>
+                        <span class="store-copy">
+                            <span class="store-label">iOS</span>
+                            <span class="store-meta">download</span>
+                        </span>
+                    </a>
                     {%- else %}
-                    <span class="cta secondary disabled">iPhone download coming soon</span>
+                    <span class="store-link disabled" aria-hidden="true">
+                        <span class="store-mark ios">i</span>
+                        <span class="store-copy">
+                            <span class="store-label">iOS</span>
+                            <span class="store-meta">download soon</span>
+                        </span>
+                    </span>
+                    {%- endif %}
+                </div>
+                <div class="download-row">
+                    <a class="cta primary" href="arcana://invite/{{ token }}?web={{ client_domain }}/invite/{{ token }}">Open in Arcana</a>
+                    {%- if let Some(url) = android_fdroid_download %}
+                    <a class="cta secondary" href="{{ url }}">F-Droid APK</a>
+                    {%- else %}
+                    <span class="cta secondary disabled">F-Droid APK soon</span>
+                    {%- endif %}
+                    {%- if let Some(url) = android_store_download %}
+                    <a class="cta secondary" href="{{ url }}">Android download</a>
+                    {%- else %}
+                    <span class="cta secondary disabled">Android download soon</span>
                     {%- endif %}
                 </div>
                 <p class="fine-print">
-                    {%- if let Some(url) = android_gdroid_download %}
-                    Alternate Android download: <a href="{{ url }}">G-Droid</a>.
-                    {%- else %}
-                    Alternate Android download will be linked here later.
-                    {%- endif %}
+                    The three links below are for Android, F-Droid/Huawei, and iOS.
                 </p>
             </div>
 
