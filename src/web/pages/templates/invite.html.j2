@@ -17,7 +17,10 @@ Open Arcana invite
                 <img class="hero-logo" src="/_continuwuity/resources/logo.svg" alt="">
                 <h1>Invite received</h1>
                 <p class="hero-copy">
-                    This invite opens a direct chat with <span class="token-chip">{{ target }}</span> in room <span class="token-chip">{{ room_id }}</span>.
+                    This invite opens Arcana and can take you straight into a chat with <span class="token-chip">{{ inviter }}</span>.
+                    {%- if room_id %}
+                    It is already linked to room <span class="token-chip">{{ room_id }}</span>.
+                    {%- endif %}
                 </p>
                 <p class="fine-print">
                     The browser fallback page is <span class="token-chip">{{ client_domain }}/invite/{{ token }}</span>.
@@ -101,7 +104,7 @@ Open Arcana invite
                 </div>
                 <div class="feature-card">
                     <h2>Invite author</h2>
-                    <p>This DM was created by <span class="token-chip">{{ inviter }}</span>.</p>
+                    <p>This invite was created by <span class="token-chip">{{ inviter }}</span>.</p>
                 </div>
                 <div class="feature-card">
                     <h2>Fallback download</h2>

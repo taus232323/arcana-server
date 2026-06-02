@@ -5,7 +5,10 @@ use axum::{
 };
 use conduwuit::{Err, Result};
 use http::HeaderMap;
+use ruma::OwnedUserId;
 use serde::{Deserialize, Serialize};
+
+use conduwuit_service::{admin::create_or_get_direct_room, invites::INVITE_WEB_PATH};
 
 use super::join_room_by_id_helper;
 
@@ -51,6 +54,35 @@ pub struct ArcanaInviteAcceptResponse {
 	open_room: Option<bool>,
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArcanaInviteRevokeResponse {
+	revoked: bool,
+}
+
+pub(crate) async fn create_invite(
+	State(services): State<crate::State>,
+	headers: HeaderMap,
+) -> Result<Json<ArcanaInviteResponse>> {
+	let Some(access_token) = bearer_token(&headers).map(str::to_owned) else {
+		return Err!(Request(MissingToken("Missing access token.")));
+	};
+
+	let (sender_user, _device_id) = services
+		.users
+		.find_from_token(&access_token)
+		.await?;
+
+	if services.users.is_suspended(&sender_user).await? {
+		return Err!(Request(UserSuspended("You cannot perform this action while suspended.")));
+	}
+
+	let token = services.invites.issue_token(sender_user).await?;
+
+	let response = invite_response(&services, token).await?;
+	Ok(Json(response))
+}
+
 pub(crate) async fn get_invite(
 	State(services): State<crate::State>,
 	Path(token): Path<String>,
@@ -58,41 +90,7 @@ pub(crate) async fn get_invite(
 	let Some(token) = services.invites.check_token(&token).await else {
 		return Err!(Request(NotFound("Invite token not found.")));
 	};
-
-	let room_name = services.rooms.state_accessor.get_name(&token.info.room_id).await.ok();
-	let inviter_display_name = services.users.displayname(&token.info.inviter).await.ok();
-	let inviter_avatar_url = services.users.avatar_url(&token.info.inviter).await.ok();
-	let target_display_name = services.users.displayname(&token.info.target).await.ok();
-	let target_avatar_url = services.users.avatar_url(&token.info.target).await.ok();
-
-	let mut web_url = services.config.get_client_domain().join("/invite").unwrap();
-	web_url
-		.path_segments_mut()
-		.expect("invite URL should support path segments")
-		.push(token.token.as_str());
-
-	Ok(Json(ArcanaInviteResponse {
-		token: token.token,
-		kind: Some("dm".to_owned()),
-		inviter: Some(ArcanaInviteIdentityResponse {
-			user_id: Some(token.info.inviter.to_string()),
-			display_name: inviter_display_name,
-			avatar_url: inviter_avatar_url.map(|url| url.to_string()),
-		}),
-		target: Some(ArcanaInviteIdentityResponse {
-			user_id: Some(token.info.target.to_string()),
-			display_name: target_display_name,
-			avatar_url: target_avatar_url.map(|url| url.to_string()),
-		}),
-		room: Some(ArcanaInviteRoomResponse {
-			room_id: Some(token.info.room_id.to_string()),
-			room_name,
-			is_dm: Some(true),
-		}),
-		web_url: Some(web_url.to_string()),
-		expires_at: None,
-		used: Some(token.info.used_at.is_some()),
-	}))
+	Ok(Json(invite_response(&services, token).await?))
 }
 
 pub(crate) async fn accept_invite(
@@ -117,23 +115,29 @@ pub(crate) async fn accept_invite(
 		.find_from_token(&access_token)
 		.await?;
 
-	if sender_user != token.info.target {
+	if sender_user == token.info.inviter {
 		return Err!(Request(Forbidden(
-			"This invite is not addressed to the authenticated user."
+			"This invite cannot be accepted by the inviter."
 		)));
 	}
+
+	let room_id = if let Some(room_id) = token.info.room_id.clone() {
+		room_id
+	} else {
+		create_or_get_direct_room(&services, &token.info.inviter, &sender_user).await?
+	};
 
 	let was_joined = services
 		.rooms
 		.state_cache
-		.is_joined(&sender_user, &token.info.room_id)
+		.is_joined(&sender_user, &room_id)
 		.await;
 
 	if !was_joined {
 		join_room_by_id_helper(
 			&services,
 			&sender_user,
-			&token.info.room_id,
+			&room_id,
 			Some("Accepted invite".to_owned()),
 			&[],
 			&None,
@@ -141,13 +145,78 @@ pub(crate) async fn accept_invite(
 		.await?;
 	}
 
-	services.invites.mark_token_used(&token.token).await;
+	services.invites.mark_token_used(&token.token, Some(room_id.clone())).await;
 
 	Ok(Json(ArcanaInviteAcceptResponse {
-		room_id: token.info.room_id.to_string(),
+		room_id: room_id.to_string(),
 		is_new: Some(!was_joined),
 		open_room: Some(true),
 	}))
+}
+
+pub(crate) async fn revoke_invite(
+	State(services): State<crate::State>,
+	headers: HeaderMap,
+	Path(token): Path<String>,
+) -> Result<Json<ArcanaInviteRevokeResponse>> {
+	let Some(access_token) = bearer_token(&headers).map(str::to_owned) else {
+		return Err!(Request(MissingToken("Missing access token.")));
+	};
+
+	let (sender_user, _device_id) = services
+		.users
+		.find_from_token(&access_token)
+		.await?;
+
+	let Some(existing) = services.invites.check_token(&token).await else {
+		return Err!(Request(NotFound("Invite token not found.")));
+	};
+
+	if sender_user != existing.info.inviter {
+		return Err!(Request(Forbidden(
+			"This invite is not owned by the authenticated user."
+		)));
+	}
+
+	let revoked = services.invites.revoke_token(&token).await.is_some();
+	Ok(Json(ArcanaInviteRevokeResponse { revoked }))
+}
+
+async fn invite_response(
+	services: &crate::State,
+	token: conduwuit_service::invites::ValidInviteToken,
+) -> Result<ArcanaInviteResponse> {
+	let room_name = match token.info.room_id.as_ref() {
+		Some(room_id) => services.rooms.state_accessor.get_name(room_id).await.ok(),
+		None => None,
+	};
+	let inviter_display_name = services.users.displayname(&token.info.inviter).await.ok();
+	let inviter_avatar_url = services.users.avatar_url(&token.info.inviter).await.ok();
+
+	let mut web_url = services.config.get_client_domain().join(INVITE_WEB_PATH).unwrap();
+	web_url
+		.path_segments_mut()
+		.expect("invite URL should support path segments")
+		.push(token.token.as_str());
+
+	Ok(ArcanaInviteResponse {
+		token: token.token,
+		kind: Some("app".to_owned()),
+		inviter: Some(ArcanaInviteIdentityResponse {
+			user_id: Some(token.info.inviter.to_string()),
+			display_name: inviter_display_name,
+			avatar_url: inviter_avatar_url.map(|url| url.to_string()),
+		}),
+		target: None,
+		room: token.info.room_id.as_ref().map(|room_id| ArcanaInviteRoomResponse {
+			room_id: Some(room_id.to_string()),
+			room_name,
+			is_dm: Some(true),
+		}),
+		web_url: Some(web_url.to_string()),
+		expires_at: None,
+		used: Some(token.info.used_at.is_some()),
+	})
 }
 
 fn bearer_token(headers: &HeaderMap) -> Option<&str> {

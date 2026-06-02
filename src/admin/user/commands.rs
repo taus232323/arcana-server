@@ -335,11 +335,7 @@ pub(super) async fn issue_invite_link(&self, username: String) -> Result {
 	let target_user = parse_active_local_user_id(self.services, &username).await?;
 	let sender_user = self.sender_or_service_user().to_owned();
 	let room_id = create_or_get_direct_room(self.services, &sender_user, &target_user).await?;
-	let token = self
-		.services
-		.invites
-		.issue_token(sender_user, target_user, room_id.clone())
-		.await?;
+	let token = self.services.invites.issue_token(sender_user).await?;
 
 	let mut invite_url = self
 		.services

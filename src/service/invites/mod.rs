@@ -46,30 +46,15 @@ impl Service {
 	pub async fn issue_token(
 		&self,
 		inviter: OwnedUserId,
-		target: OwnedUserId,
-		room_id: OwnedRoomId,
 	) -> Result<ValidInviteToken> {
 		if !self.services.globals.user_is_local(&inviter) {
 			return Err!("Cannot issue an invite token for remote inviter {inviter}");
 		}
 
-		if !self.services.globals.user_is_local(&target) {
-			return Err!("Cannot issue an invite token for remote target {target}");
-		}
-
-		if inviter == target {
-			return Err!("Cannot issue an invite token for a direct chat with yourself");
-		}
-
-		if let Some((existing_token, _)) = self.db.find_token_for_room(&room_id).await {
-			self.db.remove_token(&existing_token);
-		}
-
 		let token = Self::generate_token_string();
 		let info = InviteTokenInfo {
 			inviter,
-			target,
-			room_id,
+			room_id: None,
 			issued_at: SystemTime::now(),
 			used_at: None,
 		};
@@ -87,7 +72,14 @@ impl Service {
 	}
 
 	pub async fn mark_token_used(&self, token: &str) -> Option<ValidInviteToken> {
-		self.db.mark_token_used(token).await.map(|info| ValidInviteToken {
+		self.db.mark_token_used(token, None).await.map(|info| ValidInviteToken {
+			token: token.to_owned(),
+			info,
+		})
+	}
+
+	pub async fn revoke_token(&self, token: &str) -> Option<ValidInviteToken> {
+		self.db.revoke_token(token).await.map(|info| ValidInviteToken {
 			token: token.to_owned(),
 			info,
 		})
