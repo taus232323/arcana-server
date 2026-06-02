@@ -33,7 +33,7 @@ async fn invite(
 			client_domain: String,
 			android_store_download: Option<String>,
 			android_fdroid_download: Option<String>,
-			ios_download: Option<String>,
+			ios_download: Option<String>
 		}
 	}
 
