@@ -1,9 +1,5 @@
-use std::{
-	sync::Arc,
-	time::SystemTime,
-};
+use std::{sync::Arc, time::SystemTime};
 
-use conduwuit::utils::{ReadyExt, stream::TryExpect};
 use database::{Database, Deserialized, Json, Map};
 use ruma::{OwnedRoomId, OwnedUserId};
 use serde::{Deserialize, Serialize};
@@ -35,17 +31,6 @@ impl Data {
 		self.invitetoken_info.get(token).await.deserialized().ok()
 	}
 
-	pub(super) async fn find_token_for_room(
-		&self,
-		room_id: &OwnedRoomId,
-	) -> Option<(String, InviteTokenInfo)> {
-		self.invitetoken_info
-			.stream::<'_, String, InviteTokenInfo>()
-			.expect_ok()
-			.ready_find(|(_, info)| info.room_id.as_ref() == Some(room_id))
-			.await
-	}
-
 	pub(super) fn remove_token(&self, token: &str) { self.invitetoken_info.remove(token); }
 
 	pub(super) async fn revoke_token(&self, token: &str) -> Option<InviteTokenInfo> {
@@ -54,17 +39,10 @@ impl Data {
 		Some(info)
 	}
 
-	pub(super) async fn mark_token_used(
-		&self,
-		token: &str,
-		room_id: Option<OwnedRoomId>,
-	) -> Option<InviteTokenInfo> {
+	pub(super) async fn mark_token_used(&self, token: &str) -> Option<InviteTokenInfo> {
 		let mut info = self.lookup_token_info(token).await?;
 		if info.used_at.is_none() {
 			info.used_at = Some(SystemTime::now());
-			if info.room_id.is_none() {
-				info.room_id = room_id;
-			}
 			self.save_token(token, &info);
 		}
 		Some(info)

@@ -72,7 +72,7 @@ impl Service {
 	}
 
 	pub async fn mark_token_used(&self, token: &str) -> Option<ValidInviteToken> {
-		self.db.mark_token_used(token, None).await.map(|info| ValidInviteToken {
+		self.db.mark_token_used(token).await.map(|info| ValidInviteToken {
 			token: token.to_owned(),
 			info,
 		})

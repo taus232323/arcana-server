@@ -5,7 +5,6 @@ use axum::{
 };
 use conduwuit::{Err, Result};
 use http::HeaderMap;
-use ruma::OwnedUserId;
 use serde::{Deserialize, Serialize};
 
 use conduwuit_service::{admin::create_or_get_direct_room, invites::INVITE_WEB_PATH};
@@ -145,7 +144,7 @@ pub(crate) async fn accept_invite(
 		.await?;
 	}
 
-	services.invites.mark_token_used(&token.token, Some(room_id.clone())).await;
+	services.invites.mark_token_used(&token.token).await;
 
 	Ok(Json(ArcanaInviteAcceptResponse {
 		room_id: room_id.to_string(),
