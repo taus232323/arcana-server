@@ -169,11 +169,7 @@ pub struct Config {
 	///
 	/// To disable, set this to "" (an empty string).
 	///
-	/// The default is the trans pride flag.
-	///
-	/// example: "🏳️‍⚧️"
-	///
-	/// default: "🏳️‍⚧️"
+	/// default: ""
 	#[serde(default = "default_new_user_displayname_suffix")]
 	pub new_user_displayname_suffix: String,
 
@@ -2887,7 +2883,7 @@ fn default_url_preview_max_spider_size() -> usize {
 
 fn default_url_preview_timeout() -> u64 { 120 }
 
-fn default_new_user_displayname_suffix() -> String { "🏳️‍⚧️".to_owned() }
+fn default_new_user_displayname_suffix() -> String { String::new() }
 
 fn default_sentry_endpoint() -> Option<Url> { None }
 

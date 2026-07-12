@@ -121,7 +121,7 @@
 #
 # example: "🏳️‍⚧️"
 #
-#new_user_displayname_suffix = "🏳️‍⚧️"
+#new_user_displayname_suffix = ""
 
 # If enabled, continuwuity will send a simple GET request periodically to
 # `https://continuwuity.org/.well-known/continuwuity/announcements` for any new

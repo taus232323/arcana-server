@@ -83,6 +83,7 @@ pub fn build() -> Router<state::State> {
 	use pages::*;
 
 	Router::new()
+		.merge(apple_app_site_association::build())
 		.merge(assetlinks::build())
 		.merge(index::build())
 		.merge(invite::build())

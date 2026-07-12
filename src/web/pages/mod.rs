@@ -1,4 +1,5 @@
 mod components;
+pub(super) mod apple_app_site_association;
 pub(super) mod assetlinks;
 pub(super) mod debug;
 pub(super) mod invite;
