@@ -695,6 +695,17 @@ pub struct Config {
 	#[serde(default)]
 	pub require_auth_for_profile_requests: bool,
 
+	/// Set this to true to return all matching local users from user directory
+	/// search, regardless of room membership or join rules.
+	///
+	/// By default, user directory search follows the Matrix specification and
+	/// only returns users who share a room with the requester or are in at
+	/// least one public room. Enable this on closed servers (e.g. with
+	/// federation disabled) to allow Telegram-style user discovery within your
+	/// homeserver.
+	#[serde(default)]
+	pub allow_unrestricted_user_directory_search: bool,
+
 	/// Set this to true to allow your server's public room directory to be
 	/// federated. Set this to false to protect against /publicRooms spiders,
 	/// but will forbid external users from viewing your server's public room

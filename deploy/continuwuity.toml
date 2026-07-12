@@ -5,6 +5,7 @@ port = 8008
 database_path = "/var/lib/continuwuity"
 allow_registration = true
 allow_federation = false
+allow_unrestricted_user_directory_search = true
 new_user_displayname_suffix = ""
 
 # Optional hardening:
