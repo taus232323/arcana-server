@@ -8,6 +8,13 @@ allow_federation = false
 allow_unrestricted_user_directory_search = true
 new_user_displayname_suffix = ""
 
+# Force email verification during all registrations.
+# SMTP is supplied from the local `.env` file, which is mounted into the
+# Docker container by `deploy/docker-compose.yml`.
+# See `.env.example` in the repository root for the required variables.
+require_email_for_registration = true
+require_email_for_token_registration = true
+
 # Optional hardening:
 # suspend_on_register = true
 # recaptcha_site_key = "..."
@@ -17,10 +24,11 @@ new_user_displayname_suffix = ""
 client = "https://arcana.celesteai.ru"
 server = "matrix.celesteai.ru:443"
 
-# SMTP is supplied from the local `.env` file, which is mounted into the
-# Docker container by `deploy/docker-compose.yml`.
-# See `.env.example` in the repository root for the required variables.
+# Shown during registration / available to clients as policy documents.
+[global.registration_terms.privacy_policy]
+en = { name = "Privacy Policy", url = "https://arcana.celesteai.ru/privacy" }
+ru = { name = "Политика конфиденциальности", url = "https://arcana.celesteai.ru/privacy" }
 
-# Force email verification during all registrations.
-require_email_for_registration = true
-require_email_for_token_registration = true
+[global.registration_terms.terms_of_service]
+en = { name = "Terms of use", url = "https://arcana.celesteai.ru/terms" }
+ru = { name = "Условия использования", url = "https://arcana.celesteai.ru/terms" }

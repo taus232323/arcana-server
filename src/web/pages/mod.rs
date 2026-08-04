@@ -5,6 +5,7 @@ pub(super) mod debug;
 pub(super) mod invite;
 pub(super) mod index;
 pub(super) mod password_reset;
+pub(super) mod privacy;
 pub(super) mod resources;
 pub(super) mod threepid;
 

@@ -113,6 +113,8 @@ curl -i https://arcana.celesteai.ru/_matrix/client/versions
 curl -i https://celesteai.ru/.well-known/matrix/server
 curl -i https://celesteai.ru/.well-known/matrix/client
 curl -I https://chat.celesteai.ru
+curl -I https://arcana.celesteai.ru/privacy
+curl -I https://arcana.celesteai.ru/terms
 ```
 
 For email flows, also verify:

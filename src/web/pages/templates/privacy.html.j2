@@ -1,0 +1,183 @@
+{% extends "_layout.html.j2" %}
+
+{%- block title -%}
+Privacy Policy · Arcana
+{%- endblock -%}
+
+{%- block head -%}
+<link rel="stylesheet" href="/_continuwuity/resources/legal.css">
+{%- endblock -%}
+
+{%- block content -%}
+<article class="panel legal-panel">
+    <header class="legal-header">
+        <p class="legal-eyebrow">Arcana</p>
+        <h1>Политика конфиденциальности</h1>
+        <p class="legal-meta">Privacy Policy · Last updated: 4 August 2026</p>
+        <p class="legal-lang"><a href="#en">English version</a></p>
+    </header>
+
+    <section class="legal-section">
+        <h2>1. Кто мы</h2>
+        <p>
+            Arcana — мессенджер на протоколе Matrix. Сервис предоставляется оператором
+            <strong>Celeste AI</strong> (далее — «мы»). Домашний сервер: <code>celesteai.ru</code>,
+            клиентский вход: <code>https://arcana.celesteai.ru</code>.
+        </p>
+        <p>
+            По вопросам конфиденциальности: <a href="mailto:privacy@celesteai.ru">privacy@celesteai.ru</a>.
+        </p>
+    </section>
+
+    <section class="legal-section">
+        <h2>2. Какие данные мы обрабатываем</h2>
+        <ul>
+            <li><strong>Аккаунт:</strong> имя пользователя (Matrix ID), адрес электронной почты, отображаемое имя, аватар.</li>
+            <li><strong>Сообщения и медиа:</strong> содержимое чатов, файлы и вложения, которые вы отправляете. В зашифрованных комнатах текст сообщений недоступен серверу в читаемом виде (E2EE).</li>
+            <li><strong>Служебные данные:</strong> список комнат, приглашения, ключи устройств, push-токены для уведомлений, технические журналы (IP, User-Agent) в объёме, необходимом для работы и безопасности сервиса.</li>
+            <li><strong>Устройство:</strong> идентификаторы сессий и устройств, необходимые для входа и сквозного шифрования.</li>
+        </ul>
+    </section>
+
+    <section class="legal-section">
+        <h2>3. Зачем мы обрабатываем данные</h2>
+        <ul>
+            <li>создание и обслуживание аккаунта Arcana;</li>
+            <li>доставка сообщений, приглашений и уведомлений;</li>
+            <li>обеспечение безопасности, предотвращение злоупотреблений и восстановление доступа;</li>
+            <li>исполнение требований закона по запросу уполномоченных органов (когда это обязательно).</li>
+        </ul>
+        <p>Мы не продаём персональные данные и не используем содержимое переписки для рекламы.</p>
+    </section>
+
+    <section class="legal-section">
+        <h2>4. Хранение и передача</h2>
+        <p>
+            Данные аккаунта и метаданные хранятся на инфраструктуре сервера <code>celesteai.ru</code>.
+            Федерация с другими Matrix-серверами на этом развёртывании отключена, поэтому ваши данные
+            не реплицируются на сторонние homeserver’ы через федерацию.
+        </p>
+        <p>
+            Для push-уведомлений могут использоваться платформенные сервисы (например, Firebase Cloud Messaging /
+            Apple Push Notification service). Им передаётся минимально необходимый технический токен и служебный
+            payload уведомления.
+        </p>
+    </section>
+
+    <section class="legal-section">
+        <h2>5. Сроки хранения</h2>
+        <p>
+            Данные хранятся, пока существует ваш аккаунт, либо пока они нужны для работы сервиса и безопасности.
+            После удаления аккаунта данные удаляются или обезличиваются в разумный срок, за исключением случаев,
+            когда закон требует более длительного хранения.
+        </p>
+    </section>
+
+    <section class="legal-section">
+        <h2>6. Ваши права</h2>
+        <p>Вы можете запросить доступ к своим данным, их исправление или удаление аккаунта, написав на
+            <a href="mailto:privacy@celesteai.ru">privacy@celesteai.ru</a>. Часть данных (например, сообщения,
+            которые видели другие участники) может сохраняться у них локально.</p>
+    </section>
+
+    <section class="legal-section">
+        <h2>7. Дети</h2>
+        <p>Сервис не предназначен для детей младше 13 лет (или более высокого возраста, если этого требует закон вашей страны).</p>
+    </section>
+
+    <section class="legal-section">
+        <h2>8. Изменения</h2>
+        <p>Мы можем обновить эту политику. Актуальная версия всегда доступна по адресу
+            <a href="https://arcana.celesteai.ru/privacy">https://arcana.celesteai.ru/privacy</a>.
+            Существенные изменения будут отражены датой обновления на этой странице.</p>
+    </section>
+
+    <hr class="legal-divider" id="en">
+
+    <header class="legal-header">
+        <h1>Privacy Policy</h1>
+        <p class="legal-meta">Arcana · Last updated: 4 August 2026</p>
+    </header>
+
+    <section class="legal-section">
+        <h2>1. Who we are</h2>
+        <p>
+            Arcana is a Matrix messenger operated by <strong>Celeste AI</strong> (“we”, “us”).
+            Homeserver: <code>celesteai.ru</code>. Client entrypoint:
+            <code>https://arcana.celesteai.ru</code>.
+        </p>
+        <p>Privacy contact: <a href="mailto:privacy@celesteai.ru">privacy@celesteai.ru</a>.</p>
+    </section>
+
+    <section class="legal-section">
+        <h2>2. Data we process</h2>
+        <ul>
+            <li><strong>Account:</strong> username (Matrix ID), email address, display name, avatar.</li>
+            <li><strong>Messages and media:</strong> chat content, files and attachments you send. In encrypted rooms, message bodies are end-to-end encrypted and not readable by the server.</li>
+            <li><strong>Service data:</strong> room membership, invites, device keys, push tokens, and technical logs (IP, User-Agent) as needed for operation and security.</li>
+            <li><strong>Device:</strong> session and device identifiers required for sign-in and encryption.</li>
+        </ul>
+    </section>
+
+    <section class="legal-section">
+        <h2>3. Why we process data</h2>
+        <ul>
+            <li>to create and operate your Arcana account;</li>
+            <li>to deliver messages, invites and notifications;</li>
+            <li>to protect the service, prevent abuse and help with account recovery;</li>
+            <li>to comply with legal obligations when required.</li>
+        </ul>
+        <p>We do not sell personal data and do not use message contents for advertising.</p>
+    </section>
+
+    <section class="legal-section">
+        <h2>4. Storage and sharing</h2>
+        <p>
+            Account data and metadata are stored on the <code>celesteai.ru</code> infrastructure.
+            Federation to other Matrix servers is disabled on this deployment, so your data is not
+            replicated to third-party homeservers via federation.
+        </p>
+        <p>
+            Push notifications may use platform services (such as Firebase Cloud Messaging /
+            Apple Push Notification service). They receive only the technical token and notification payload needed to deliver alerts.
+        </p>
+    </section>
+
+    <section class="legal-section">
+        <h2>5. Retention</h2>
+        <p>
+            We keep data while your account exists or as needed to operate and secure the service.
+            After account deletion, data is deleted or anonymised within a reasonable time, unless a longer period is required by law.
+        </p>
+    </section>
+
+    <section class="legal-section">
+        <h2>6. Your rights</h2>
+        <p>
+            You may request access, correction, or account deletion by contacting
+            <a href="mailto:privacy@celesteai.ru">privacy@celesteai.ru</a>.
+            Some data (for example messages already delivered to other participants) may remain on their devices.
+        </p>
+    </section>
+
+    <section class="legal-section">
+        <h2>7. Children</h2>
+        <p>The service is not intended for children under 13 (or a higher age required by your local law).</p>
+    </section>
+
+    <section class="legal-section">
+        <h2>8. Changes</h2>
+        <p>
+            We may update this policy. The current version is always available at
+            <a href="https://arcana.celesteai.ru/privacy">https://arcana.celesteai.ru/privacy</a>.
+            Material changes will be reflected in the update date above.
+        </p>
+    </section>
+
+    <p class="legal-footer-links">
+        <a href="/terms">Terms of use</a>
+        ·
+        <a href="/">Arcana home</a>
+    </p>
+</article>
+{%- endblock -%}
