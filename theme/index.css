@@ -1,5 +1,5 @@
 :root {
-    --rp-c-brand: #8a5cd0;
+    --rp-c-brand: #67c8b8;
     --rp-c-brand-light: oklch(from var(--rp-c-brand) 0.7197 c h);
     --rp-c-brand-lighter: oklch(from var(--rp-c-brand) 0.7818 c h);
     --rp-c-brand-dark: oklch(from var(--rp-c-brand) 0.5967 c h);

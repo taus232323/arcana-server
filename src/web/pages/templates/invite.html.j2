@@ -1,7 +1,7 @@
 {% extends "_layout.html.j2" %}
 
 {%- block title -%}
-Open Arcana invite
+Приглашение в Arcana
 {%- endblock -%}
 
 {%- block head -%}
@@ -11,114 +11,81 @@ Open Arcana invite
 {%- block content -%}
 <div class="panel landing-panel">
     <section class="hero">
-        <div class="hero-grid">
-            <div class="hero-brand">
-                <span class="hero-badge">Arcana invite</span>
-                <img class="hero-logo" src="/_continuwuity/resources/logo.svg" alt="">
-                <h1>Invite received</h1>
-                <p class="hero-copy">
-                    This invite opens Arcana and can take you straight into a chat with <span class="token-chip">{{ inviter }}</span>.
-                    {%- if has_room_id %}
-                    It is already linked to room <span class="token-chip">{{ room_id }}</span>.
-                    {%- endif %}
-                </p>
-                <p class="fine-print">
-                    The browser fallback page is <span class="token-chip">{{ client_domain }}/invite/{{ token }}</span>.
-                </p>
-                <span class="token-chip">{{ token }}</span>
-                <div class="store-row" aria-label="Store links">
-                    {%- if let Some(url) = android_store_download %}
-                    <a class="store-link" href="{{ url }}" aria-label="Open Android download page">
-                        <span class="store-mark android" aria-hidden="true">A</span>
-                        <span class="store-copy">
-                            <span class="store-label">Android</span>
-                            <span class="store-meta">download</span>
-                        </span>
-                    </a>
-                    {%- else %}
-                    <span class="store-link disabled" aria-hidden="true">
-                        <span class="store-mark android">A</span>
-                        <span class="store-copy">
-                            <span class="store-label">Android</span>
-                            <span class="store-meta">download soon</span>
-                        </span>
-                    </span>
-                    {%- endif %}
-                    {%- if let Some(url) = android_fdroid_download %}
-                    <a class="store-link" href="{{ url }}" aria-label="Open F-Droid download page">
-                        <span class="store-mark huawei" aria-hidden="true">F</span>
-                        <span class="store-copy">
-                            <span class="store-label">F-Droid</span>
-                            <span class="store-meta">Huawei</span>
-                        </span>
-                    </a>
-                    {%- else %}
-                    <span class="store-link disabled" aria-hidden="true">
-                        <span class="store-mark huawei">F</span>
-                        <span class="store-copy">
-                            <span class="store-label">F-Droid</span>
-                            <span class="store-meta">Huawei soon</span>
-                        </span>
-                    </span>
-                    {%- endif %}
-                    {%- if let Some(url) = ios_download %}
-                    <a class="store-link" href="{{ url }}" aria-label="Open iOS download page">
-                        <span class="store-mark ios" aria-hidden="true">i</span>
-                        <span class="store-copy">
-                            <span class="store-label">iOS</span>
-                            <span class="store-meta">download</span>
-                        </span>
-                    </a>
-                    {%- else %}
-                    <span class="store-link disabled" aria-hidden="true">
-                        <span class="store-mark ios">i</span>
-                        <span class="store-copy">
-                            <span class="store-label">iOS</span>
-                            <span class="store-meta">download soon</span>
-                        </span>
-                    </span>
-                    {%- endif %}
-                </div>
-                <div class="download-row">
-                    <a class="cta primary" href="arcana://invite/{{ token }}?web={{ client_domain }}/invite/{{ token }}">Open in Arcana</a>
-                    {%- if let Some(url) = android_fdroid_download %}
-                    <a class="cta secondary" href="{{ url }}">F-Droid APK</a>
-                    {%- else %}
-                    <span class="cta secondary disabled">F-Droid APK soon</span>
-                    {%- endif %}
-                    {%- if let Some(url) = android_store_download %}
-                    <a class="cta secondary" href="{{ url }}">Android download</a>
-                    {%- else %}
-                    <span class="cta secondary disabled">Android download soon</span>
-                    {%- endif %}
-                </div>
-                <p class="fine-print">
-                    The three links below are for Android, F-Droid/Huawei, and iOS.
-                </p>
+        <div class="hero-brand">
+            <img class="hero-logo" src="/_continuwuity/resources/icon-512.png" alt="Arcana">
+            <p class="brand-name">Arcana</p>
+            <h1>Вас пригласили</h1>
+            <p class="hero-copy">
+                Откройте приглашение в приложении
+                {%- if inviter %}
+                — от <span class="token-chip">{{ inviter }}</span>
+                {%- endif %}.
+            </p>
+
+            <div class="download-row">
+                <a class="cta primary" href="arcana://invite/{{ token }}?web={{ client_domain }}/invite/{{ token }}">Открыть в Arcana</a>
             </div>
 
-            <aside class="feature-grid" aria-label="Invite details">
-                <div class="feature-card">
-                    <h2>Open in app</h2>
-                    <p>When app links are enabled on the device, the invite can jump straight into the messenger.</p>
-                </div>
-                <div class="feature-card">
-                    <h2>Invite author</h2>
-                    <p>This invite was created by <span class="token-chip">{{ inviter }}</span>.</p>
-                </div>
-                <div class="feature-card">
-                    <h2>Fallback download</h2>
-                    <p>If the app is not installed yet, the buttons below take you to the client download path.</p>
-                </div>
-                <div class="feature-card">
-                    <h2>Server</h2>
-                    <p>You're coming into <span class="token-chip">{{ server_name }}</span>.</p>
-                </div>
-            </aside>
+            <p class="hero-copy subtle">Нет приложения? Скачайте и вернитесь к этой ссылке.</p>
+
+            <div class="store-row" aria-label="Ссылки на скачивание">
+                {%- if let Some(url) = android_store_download %}
+                <a class="store-link" href="{{ url }}">
+                    <span class="store-mark android" aria-hidden="true">A</span>
+                    <span class="store-copy">
+                        <span class="store-label">Android</span>
+                        <span class="store-meta">скачать</span>
+                    </span>
+                </a>
+                {%- else %}
+                <span class="store-link disabled" aria-hidden="true">
+                    <span class="store-mark android">A</span>
+                    <span class="store-copy">
+                        <span class="store-label">Android</span>
+                        <span class="store-meta">скоро</span>
+                    </span>
+                </span>
+                {%- endif %}
+                {%- if let Some(url) = android_fdroid_download %}
+                <a class="store-link" href="{{ url }}">
+                    <span class="store-mark huawei" aria-hidden="true">F</span>
+                    <span class="store-copy">
+                        <span class="store-label">F-Droid</span>
+                        <span class="store-meta">APK / Huawei</span>
+                    </span>
+                </a>
+                {%- else %}
+                <span class="store-link disabled" aria-hidden="true">
+                    <span class="store-mark huawei">F</span>
+                    <span class="store-copy">
+                        <span class="store-label">F-Droid</span>
+                        <span class="store-meta">скоро</span>
+                    </span>
+                </span>
+                {%- endif %}
+                {%- if let Some(url) = ios_download %}
+                <a class="store-link" href="{{ url }}">
+                    <span class="store-mark ios" aria-hidden="true">i</span>
+                    <span class="store-copy">
+                        <span class="store-label">iOS</span>
+                        <span class="store-meta">скачать</span>
+                    </span>
+                </a>
+                {%- else %}
+                <span class="store-link disabled" aria-hidden="true">
+                    <span class="store-mark ios">i</span>
+                    <span class="store-copy">
+                        <span class="store-label">iOS</span>
+                        <span class="store-meta">скоро</span>
+                    </span>
+                </span>
+                {%- endif %}
+            </div>
+
             <p class="fine-print">
-                <a href="/privacy">Privacy Policy</a>
+                <a href="/privacy">Политика конфиденциальности</a>
                 ·
-                <a href="/terms">Terms of use</a>
+                <a href="/terms">Условия использования</a>
             </p>
         </div>
     </section>

@@ -6,7 +6,7 @@ export default defineConfig({
     root: 'docs',
     title: 'Continuwuity',
     description: 'A community-driven Matrix homeserver',
-    icon: '/assets/logo.svg',
+    icon: '/assets/favicon.png',
     logo: {
         light: '/assets/logo.svg',
         dark: '/assets/logo.svg',
