@@ -18,6 +18,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,8 +60,12 @@ jobs:
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=registry,ref=ghcr.io/taus232323/arcana-server:buildcache
+            type=gha,scope=arcana-server
+          cache-to: |
+            type=registry,ref=ghcr.io/taus232323/arcana-server:buildcache,mode=max,image-manifest=true,oci-mediatypes=true,ignore-error=true
+            type=gha,scope=arcana-server,mode=max,ignore-error=true
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_COMMIT_HASH_SHORT=${{ env.COMMIT_SHORT_SHA }}

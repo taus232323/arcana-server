@@ -8,6 +8,7 @@ use ruma::{
 	api::client::user_directory::search_users::{self},
 	events::room::join_rules::JoinRule,
 };
+use tracing::info;
 
 use crate::Ruma;
 
@@ -32,7 +33,20 @@ pub(crate) async fn search_users_route(
 		.map_or(LIMIT_DEFAULT, usize::from)
 		.min(LIMIT_MAX);
 
-	let search_term = body.search_term.to_lowercase();
+	// Accept `alice`, `@alice`, or `@alice:server` — match localpart / MXID / display name.
+	let search_term = body
+		.search_term
+		.trim()
+		.trim_start_matches('@')
+		.to_lowercase();
+
+	if search_term.is_empty() {
+		return Ok(search_users::v3::Response {
+			results: Vec::new(),
+			limited: false,
+		});
+	}
+
 	let mut users = services
 		.users
 		.stream()
@@ -40,14 +54,14 @@ pub(crate) async fn search_users_route(
 		.broad_filter_map(async |user_id| {
 			let display_name = services.users.displayname(&user_id).await.ok();
 
+			let localpart_matches = user_id.localpart().to_lowercase().contains(&search_term);
 			let user_id_matches = user_id.as_str().to_lowercase().contains(&search_term);
-
 			let display_name_matches = display_name
 				.as_deref()
 				.map(str::to_lowercase)
 				.is_some_and(|display_name| display_name.contains(&search_term));
 
-			if !user_id_matches && !display_name_matches {
+			if !localpart_matches && !user_id_matches && !display_name_matches {
 				return None;
 			}
 
@@ -89,8 +103,16 @@ pub(crate) async fn search_users_route(
 				})
 		});
 
-	let results = users.by_ref().take(limit).collect().await;
+	let results: Vec<_> = users.by_ref().take(limit).collect().await;
 	let limited = users.next().await.is_some();
+
+	info!(
+		%search_term,
+		unrestricted,
+		result_count = results.len(),
+		limited,
+		"user directory search"
+	);
 
 	Ok(search_users::v3::Response { results, limited })
 }
