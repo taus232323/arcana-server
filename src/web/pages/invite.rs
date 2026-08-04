@@ -20,21 +20,13 @@ async fn invite(
 	};
 	let token_string = token.token;
 	let inviter = token.info.inviter.to_string();
-	let room_id = token
-		.info
-		.room_id
-		.as_ref()
-		.map(ToString::to_string)
-		.unwrap_or_default();
-	let has_room_id = !room_id.is_empty();
+	let has_inviter = !inviter.is_empty();
 
 	template! {
-		struct Invite<'a> use "invite.html.j2" {
-			server_name: &'a str,
+		struct Invite use "invite.html.j2" {
 			token: String,
 			inviter: String,
-			room_id: String,
-			has_room_id: bool,
+			has_inviter: bool,
 			client_domain: String,
 			android_store_download: Option<String>,
 			android_fdroid_download: Option<String>,
@@ -44,11 +36,9 @@ async fn invite(
 
 	Ok(Invite::new(
 		&services,
-		services.globals.server_name().as_str(),
 		token_string,
 		inviter,
-		room_id,
-		has_room_id,
+		has_inviter,
 		services.config.get_client_domain().to_string(),
 		services
 			.config

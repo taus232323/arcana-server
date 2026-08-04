@@ -10,10 +10,8 @@ pub(crate) fn build() -> Router<crate::State> {
 
 async fn index(State(services): State<crate::State>) -> Result<impl IntoResponse, WebError> {
 	template! {
-		struct Index<'a> use "index.html.j2" {
-			server_name: &'a str,
+		struct Index use "index.html.j2" {
 			first_run: bool,
-			client_domain: String,
 			android_store_download: Option<String>,
 			android_fdroid_download: Option<String>,
 			ios_download: Option<String>
@@ -22,9 +20,7 @@ async fn index(State(services): State<crate::State>) -> Result<impl IntoResponse
 
 	Ok(Index::new(
 		&services,
-		services.globals.server_name().as_str(),
 		services.firstrun.is_first_run(),
-		services.config.get_client_domain().to_string(),
 		services
 			.config
 			.well_known
