@@ -34,9 +34,7 @@ en = { name = "Terms of use", url = "https://arcana.celesteai.ru/terms" }
 ru = { name = "Условия использования", url = "https://arcana.celesteai.ru/terms" }
 
 # Google Play review login: listed emails skip SMTP and accept a fixed 4-digit OTP
-# (same format as real login codes). Set `code` via env on the host:
-#   CONTINUWUITY_PLAY_REVIEW__CODE=XXXX
-# Uncomment and fill after creating the review user + binding its email.
-# [global.play_review]
-# emails = ["play-review@celesteai.ru"]
-# code = "XXXX"
+# (same format as real login codes). Client still shows the code screen.
+[global.play_review]
+emails = ["play-review2451324@celesteai.ru"]
+code = "6031"
