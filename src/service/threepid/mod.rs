@@ -1,7 +1,7 @@
 use std::{borrow::Cow, collections::HashMap, sync::Arc};
 
 use conduwuit::{
-	Err, Error, Result,
+	Err, Error, Result, info,
 	result::FlatOk,
 	utils::{ReadyExt, stream::TryIgnore},
 };
@@ -116,7 +116,7 @@ impl Service {
 		send_attempt: usize,
 	) -> Result<OwnedSessionId> {
 		let challenge = self
-			.issue_validation_session(recipient.email.clone(), client_secret, send_attempt)
+			.issue_validation_session(recipient.email.clone(), client_secret, send_attempt, None)
 			.await?;
 
 		let Some(token) = challenge.token else {
@@ -151,13 +151,28 @@ impl Service {
 		client_secret: &ClientSecret,
 		send_attempt: usize,
 	) -> Result<OwnedSessionId> {
+		let play_review_code = self.play_review_code_for(&recipient.email);
 		let challenge = self
-			.issue_validation_session(recipient.email.clone(), client_secret, send_attempt)
+			.issue_validation_session(
+				recipient.email.clone(),
+				client_secret,
+				send_attempt,
+				play_review_code.clone(),
+			)
 			.await?;
 
 		let Some(token) = challenge.token else {
 			return Ok(challenge.session_id);
 		};
+
+		if play_review_code.is_some() {
+			// Review accounts: keep the normal client OTP UI, but never send mail.
+			info!(
+				"Play review login: skipped email for {} (fixed OTP)",
+				recipient.email
+			);
+			return Ok(challenge.session_id);
+		}
 
 		let mailer = self.services.mailer.expect_mailer()?;
 		let message = prepare_body(token);
@@ -166,13 +181,28 @@ impl Service {
 		Ok(challenge.session_id)
 	}
 
+	fn play_review_code_for(&self, email: &Address) -> Option<String> {
+		let play_review = self.services.config.play_review.as_ref()?;
+		let email = <Address as AsRef<str>>::as_ref(email);
+		let matched = play_review
+			.emails
+			.iter()
+			.any(|configured| configured.eq_ignore_ascii_case(email));
+		matched.then(|| play_review.code.clone())
+	}
+
 	async fn issue_validation_session(
 		&self,
 		email: Address,
 		client_secret: &ClientSecret,
 		send_attempt: usize,
+		fixed_token: Option<String>,
 	) -> Result<ValidationChallenge> {
 		let mut sessions = self.sessions.lock().await;
+		let make_token = || match &fixed_token {
+			| Some(code) => ValidationToken::new_fixed(code.clone()),
+			| None => ValidationToken::new_random(),
+		};
 
 		let challenge = match sessions.get_session_by_client_secret(client_secret) {
 			| Some(session) => match session.validation_state {
@@ -183,7 +213,8 @@ impl Service {
 					});
 				},
 				| ValidationState::Pending(ref mut token) => {
-					if self.ratelimiter.check_key(&email).is_err() {
+					// Review accounts skip SMTP, so do not apply the email send ratelimit.
+					if fixed_token.is_none() && self.ratelimiter.check_key(&email).is_err() {
 						return Err(Error::BadRequest(
 							ErrorKind::LimitExceeded { retry_after: None },
 							"You're sending emails too fast, try again in a few minutes.",
@@ -205,7 +236,7 @@ impl Service {
 					*last_send_attempt = send_attempt;
 					drop(send_attempts);
 
-					*token = ValidationToken::new_random();
+					*token = make_token();
 
 					ValidationChallenge {
 						session_id: session.session_id.clone(),
@@ -214,7 +245,11 @@ impl Service {
 				},
 			},
 			| None => {
-				let session = sessions.create_session(email, client_secret.to_owned());
+				let session = sessions.create_session_with_token(
+					email,
+					client_secret.to_owned(),
+					make_token(),
+				);
 				let ValidationState::Pending(token) = &session.validation_state else {
 					unreachable!("session should be pending")
 				};

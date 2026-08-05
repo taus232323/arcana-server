@@ -254,6 +254,21 @@ pub fn check(config: &Config) -> Result {
 		));
 	}
 
+	if let Some(play_review) = &config.play_review {
+		if play_review.emails.is_empty() {
+			return Err!(Config(
+				"play_review.emails",
+				"play_review.emails must list at least one email address"
+			));
+		}
+		if play_review.code.len() != 4 || !play_review.code.chars().all(|c| c.is_ascii_digit()) {
+			return Err!(Config(
+				"play_review.code",
+				"play_review.code must be exactly 4 ASCII digits (same format as login OTP)"
+			));
+		}
+	}
+
 	Ok(())
 }
 

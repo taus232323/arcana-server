@@ -785,6 +785,13 @@ pub struct Config {
 	/// display: nested
 	pub smtp: Option<SmtpConfig>,
 
+	/// Optional Google Play / App Store review login helpers.
+	/// When set, listed emails skip SMTP and accept a fixed 4-digit code.
+	///
+	/// display: nested
+	#[serde(default)]
+	pub play_review: Option<PlayReviewConfig>,
+
 	/// Enable OpenTelemetry OTLP tracing export. This replaces the deprecated
 	/// Jaeger exporter. Traces will be sent via OTLP to a collector (such as
 	/// Jaeger) that supports the OpenTelemetry Protocol.
@@ -2561,6 +2568,27 @@ pub struct SmtpConfig {
 	/// default: false
 	#[serde(default)]
 	pub require_email_for_token_registration: bool,
+}
+
+/// Allows Google Play / App Store reviewers to complete the email OTP login
+/// step without mailbox access.
+///
+/// For configured addresses the server still returns the normal
+/// "awaiting email code" response, but does **not** send mail and accepts
+/// only the fixed 4-digit `code` (same format as real OTP codes).
+#[derive(Clone, Debug, Deserialize)]
+#[config_example_generator(
+	filename = "conduwuit-example.toml",
+	section = "global.play_review",
+	optional = "true"
+)]
+pub struct PlayReviewConfig {
+	/// Email addresses that use the fixed review code instead of SMTP.
+	/// Matching is case-insensitive.
+	pub emails: Vec<String>,
+
+	/// Fixed validation code. Must be exactly 4 digits (Arcana OTP format).
+	pub code: String,
 }
 
 /// A policy document for use with a m.login.terms stage.

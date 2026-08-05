@@ -54,6 +54,14 @@ impl ValidationToken {
 		}
 	}
 
+	/// Fixed OTP used for Play/App Store review accounts (same 4-digit format).
+	pub(super) fn new_fixed(token: String) -> Self {
+		Self {
+			token,
+			issued_at: SystemTime::now(),
+		}
+	}
+
 	pub(crate) fn is_valid(&self) -> bool {
 		let now = SystemTime::now();
 
@@ -79,11 +87,20 @@ impl ValidationSessions {
 		email: Address,
 		client_secret: OwnedClientSecret,
 	) -> &mut ValidationSession {
+		self.create_session_with_token(email, client_secret, ValidationToken::new_random())
+	}
+
+	pub(super) fn create_session_with_token(
+		&mut self,
+		email: Address,
+		client_secret: OwnedClientSecret,
+		token: ValidationToken,
+	) -> &mut ValidationSession {
 		let session = ValidationSession {
 			session_id: Self::generate_session_id(),
 			client_secret,
 			email,
-			validation_state: ValidationState::Pending(ValidationToken::new_random()),
+			validation_state: ValidationState::Pending(token),
 		};
 
 		self.client_secrets
