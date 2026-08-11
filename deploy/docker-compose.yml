@@ -33,5 +33,47 @@ services:
       - ./well-known/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./well-known:/usr/share/nginx/html/.well-known:ro
 
+  # Matrix push gateway (FCM) for Arcana Android — routed via arcana.celesteai.ru/_matrix/push
+  sygnal:
+    image: matrixdotorg/sygnal:latest
+    container_name: arcana_sygnal
+    restart: unless-stopped
+    environment:
+      SYGNAL_CONF: /sygnal/sygnal.yaml
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./sygnal/sygnal.yaml:/sygnal/sygnal.yaml:ro
+      - ./sygnal/service-account.json:/sygnal/service-account.json:ro
+
+  # Element Call / MatrixRTC: JWT exchange for LiveKit
+  lk-jwt-service:
+    image: ghcr.io/element-hq/lk-jwt-service:latest
+    container_name: arcana_lk_jwt
+    restart: unless-stopped
+    environment:
+      LIVEKIT_JWT_BIND: ":8081"
+      LIVEKIT_URL: "wss://arcana.celesteai.ru"
+      LIVEKIT_FULL_ACCESS_HOMESERVERS: "celesteai.ru"
+      LIVEKIT_KEY: "${LIVEKIT_KEY}"
+      LIVEKIT_SECRET: "${LIVEKIT_SECRET}"
+    ports:
+      - "127.0.0.1:8081:8081"
+    extra_hosts:
+      - "arcana.celesteai.ru:host-gateway"
+      - "matrix.celesteai.ru:host-gateway"
+    env_file:
+      - ../.env
+
+  # Element Call / MatrixRTC: LiveKit SFU (host networking for UDP media ports)
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: arcana_livekit
+    command: --config /etc/livekit.yaml
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+
 volumes:
   continuwuity_db:

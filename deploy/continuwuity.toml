@@ -4,7 +4,9 @@ address = ["0.0.0.0"]
 port = 8008
 database_path = "/var/lib/continuwuity"
 allow_registration = true
-allow_federation = false
+# Federation must be on for LiveKit OpenID checks, but remote servers stay blocked.
+allow_federation = true
+forbidden_remote_server_names = [".*"]
 allow_unrestricted_user_directory_search = true
 new_user_displayname_suffix = ""
 
@@ -22,7 +24,15 @@ require_email_for_token_registration = true
 
 [global.well_known]
 client = "https://arcana.celesteai.ru"
-server = "matrix.celesteai.ru:443"
+# Use the public homeserver host (has DNS + TLS). matrix.celesteai.ru has no DNS.
+server = "arcana.celesteai.ru:443"
+
+# MatrixRTC / Element Call discovery (MSC4143).
+# livekit_service_url is the lk-jwt-service public URL (same host as the SFU here).
+[global.matrix_rtc]
+foci = [
+    { type = "livekit", livekit_service_url = "https://arcana.celesteai.ru" },
+]
 
 # Shown during registration / available to clients as policy documents.
 [global.registration_terms.privacy_policy]

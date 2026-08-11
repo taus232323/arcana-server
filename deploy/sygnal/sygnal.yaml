@@ -1,0 +1,37 @@
+# Sygnal — Matrix push gateway for Arcana (FCM v1)
+# Docs: https://github.com/matrix-org/sygnal
+
+http:
+  bind_addresses: ["0.0.0.0"]
+  port: 5000
+
+log:
+  setup:
+    version: 1
+    formatters:
+      precise:
+        format: "%(asctime)s - %(name)s - %(lineno)d - %(levelname)s - %(message)s"
+    handlers:
+      console:
+        class: logging.StreamHandler
+        formatter: precise
+    loggers:
+      sygnal:
+        level: INFO
+        handlers: [console]
+        propagate: false
+      sygnal.access:
+        level: INFO
+        handlers: [console]
+        propagate: false
+    root:
+      level: INFO
+      handlers: [console]
+
+# app_id must match PushConfig.PUSHER_APP_ID in the Android client
+apps:
+  ru.celesteai.arcana:
+    type: gcm
+    api_version: v1
+    project_id: arcana-celesteai
+    service_account_file: /sygnal/service-account.json

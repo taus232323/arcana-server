@@ -3,8 +3,10 @@
 This directory contains a deploy-ready setup for:
 
 - `arcana.celesteai.ru` -> Arcana client landing page and homeserver entrypoint
+- `arcana.celesteai.ru/_matrix/push` -> Sygnal (FCM push gateway for Arcana Android)
+- `arcana.celesteai.ru` LiveKit paths (`/rtc`, `/twirp`, `/sfu/get`, `/get_token`, `/healthz`) -> Element Call / MatrixRTC
 - `chat.celesteai.ru` -> Element Web
-- `celesteai.ru/.well-known/matrix/*` -> static Matrix discovery
+- `celesteai.ru/.well-known/matrix/*` -> static Matrix discovery (includes `org.matrix.msc4143.rtc_foci`)
 
 The setup is designed for the current server layout on `celeste`:
 
@@ -14,14 +16,26 @@ The setup is designed for the current server layout on `celeste`:
   - `6167` for Continuwuity
   - `3300` for Element Web
   - `3310` for `.well-known`
+  - `5000` for Sygnal (routed via `arcana.celesteai.ru/_matrix/push`)
 
 ## Files
 
-- `docker-compose.yml` - starts the three containers
+- `docker-compose.yml` - starts the containers
 - `continuwuity.toml` - homeserver config
 - `element-config.json` - Element Web config
 - `well-known/nginx.conf` - static `.well-known` endpoints
 - `continuwuity-resolv.conf` - avoids Docker DNS federation issues
+- `sygnal/sygnal.yaml` - push gateway config (FCM v1)
+- `sygnal/service-account.json` - Firebase Admin SDK key (**not in git**)
+
+## Android push (Firebase / Sygnal)
+
+```
+homeserver → https://arcana.celesteai.ru/_matrix/push/v1/notify → FCM → Arcana
+```
+
+On the server, place the Firebase service account JSON at
+`deploy/sygnal/service-account.json` before starting Sygnal.
 
 ## Important
 
@@ -115,6 +129,9 @@ curl -i https://celesteai.ru/.well-known/matrix/client
 curl -I https://chat.celesteai.ru
 curl -I https://arcana.celesteai.ru/privacy
 curl -I https://arcana.celesteai.ru/terms
+curl -i -X POST https://arcana.celesteai.ru/_matrix/push/v1/notify \
+  -H 'Content-Type: application/json' \
+  -d '{"notification":{"devices":[]}}'
 ```
 
 For email flows, also verify:
