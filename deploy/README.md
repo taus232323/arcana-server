@@ -27,6 +27,38 @@ The setup is designed for the current server layout on `celeste`:
 - `continuwuity-resolv.conf` - avoids Docker DNS federation issues
 - `sygnal/sygnal.yaml` - push gateway config (FCM v1)
 - `sygnal/service-account.json` - Firebase Admin SDK key (**not in git**)
+- `livekit.yaml` - LiveKit SFU config (**not in git**; copy from `livekit.yaml.example`)
+
+## LiveKit / calls setup
+
+Calls need two things on the server (neither is in git):
+
+1. Repo-root `.env` with matching keys:
+
+```bash
+# generate:
+docker run --rm livekit/livekit-server:latest generate-keys
+
+# then add to .env:
+LIVEKIT_KEY=APIxxxxxxxx
+LIVEKIT_SECRET=yyyyyyyy
+```
+
+2. A real config file (not a directory):
+
+```bash
+# if Docker already created a directory by mistake:
+rm -rf deploy/livekit.yaml
+
+cp deploy/livekit.yaml.example deploy/livekit.yaml
+# replace LIVEKIT_KEY / LIVEKIT_SECRET in the keys: section with the same values
+```
+
+Then restart:
+
+```bash
+make up
+```
 
 ## Android push (Firebase / Sygnal)
 

@@ -47,6 +47,7 @@ services:
       - ./sygnal/service-account.json:/sygnal/service-account.json:ro
 
   # Element Call / MatrixRTC: JWT exchange for LiveKit
+  # LIVEKIT_KEY / LIVEKIT_SECRET must be set in repo-root .env (see .env.example).
   lk-jwt-service:
     image: ghcr.io/element-hq/lk-jwt-service:latest
     container_name: arcana_lk_jwt
@@ -55,8 +56,6 @@ services:
       LIVEKIT_JWT_BIND: ":8081"
       LIVEKIT_URL: "wss://arcana.celesteai.ru"
       LIVEKIT_FULL_ACCESS_HOMESERVERS: "celesteai.ru"
-      LIVEKIT_KEY: "${LIVEKIT_KEY}"
-      LIVEKIT_SECRET: "${LIVEKIT_SECRET}"
     ports:
       - "127.0.0.1:8081:8081"
     extra_hosts:
@@ -66,6 +65,9 @@ services:
       - ../.env
 
   # Element Call / MatrixRTC: LiveKit SFU (host networking for UDP media ports)
+  # Requires a real file at deploy/livekit.yaml (copy from livekit.yaml.example).
+  # If that path is missing, Docker creates a directory and LiveKit crashes with
+  # "read /etc/livekit.yaml: is a directory".
   livekit:
     image: livekit/livekit-server:latest
     container_name: arcana_livekit

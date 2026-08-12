@@ -2,7 +2,8 @@
 
 MATRIX_COMPOSE_FILE := deploy/docker-compose.yml
 MATRIX_COMPOSE_PROJECT ?= celesteai
-MATRIX_COMPOSE := docker compose -p $(MATRIX_COMPOSE_PROJECT) -f $(MATRIX_COMPOSE_FILE)
+MATRIX_ENV_FILE ?= .env
+MATRIX_COMPOSE := docker compose -p $(MATRIX_COMPOSE_PROJECT) --env-file $(MATRIX_ENV_FILE) -f $(MATRIX_COMPOSE_FILE)
 
 help:
 	@printf "%s\n" \
