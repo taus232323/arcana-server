@@ -23,6 +23,17 @@ services:
     volumes:
       - ./element-config.json:/app/config.json:ro
 
+  # Self-hosted Element Call SPA. Traefik should route call.celesteai.ru -> 127.0.0.1:3320
+  # so web/widget calls stay on Arcana instead of call.element.io (Element accounts).
+  element-call:
+    image: ghcr.io/element-hq/element-call:latest
+    container_name: arcana_element_call
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3320:8080"
+    volumes:
+      - ./element-call-config.json:/app/config.json:ro
+
   matrix-wellknown:
     image: nginx:alpine
     container_name: arcana_wellknown

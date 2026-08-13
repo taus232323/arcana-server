@@ -6,10 +6,15 @@
       "server_name": "celesteai.ru"
     }
   },
-  "brand": "CHANGE_ME",
+  "brand": "Arcana",
   "disable_custom_urls": true,
   "disable_guests": true,
   "show_labs_settings": false,
   "integrations_ui_url": "",
-  "integrations_rest_url": ""
+  "integrations_rest_url": "",
+  "element_call": {
+    "url": "https://call.celesteai.ru",
+    "use_exclusively": true,
+    "brand": "Arcana"
+  }
 }

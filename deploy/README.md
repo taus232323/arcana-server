@@ -6,6 +6,7 @@ This directory contains a deploy-ready setup for:
 - `arcana.celesteai.ru/_matrix/push` -> Sygnal (FCM push gateway for Arcana Android)
 - `arcana.celesteai.ru` LiveKit paths (`/rtc`, `/twirp`, `/sfu/get`, `/get_token`, `/healthz`) -> Element Call / MatrixRTC
 - `chat.celesteai.ru` -> Element Web
+- `call.celesteai.ru` -> self-hosted Element Call (not call.element.io)
 - `celesteai.ru/.well-known/matrix/*` -> static Matrix discovery (includes `org.matrix.msc4143.rtc_foci`)
 
 The setup is designed for the current server layout on `celeste`:
@@ -16,6 +17,7 @@ The setup is designed for the current server layout on `celeste`:
   - `6167` for Continuwuity
   - `3300` for Element Web
   - `3310` for `.well-known`
+  - `3320` for Element Call (`call.celesteai.ru`)
   - `5000` for Sygnal (routed via `arcana.celesteai.ru/_matrix/push`)
 
 ## Files
@@ -23,6 +25,7 @@ The setup is designed for the current server layout on `celeste`:
 - `docker-compose.yml` - starts the containers
 - `continuwuity.toml` - homeserver config
 - `element-config.json` - Element Web config
+- `element-call-config.json` - self-hosted Element Call config (Arcana homeserver, not Element)
 - `well-known/nginx.conf` - static `.well-known` endpoints
 - `continuwuity-resolv.conf` - avoids Docker DNS federation issues
 - `sygnal/sygnal.yaml` - push gateway config (FCM v1)
@@ -59,6 +62,25 @@ Then restart:
 ```bash
 make up
 ```
+
+## Element Call (do not use call.element.io)
+
+Stock Element Web opens `https://call.element.io`, which asks users to create an
+**Element** account. Arcana hosts its own Call frontend instead.
+
+1. Add DNS: `call.celesteai.ru` -> the same host as `chat.celesteai.ru`.
+2. Add a Traefik router: `call.celesteai.ru` -> `127.0.0.1:3320` (TLS like chat).
+3. `make up` so the `element-call` container is running.
+4. Check:
+
+```bash
+curl -I https://call.celesteai.ru
+curl -sS https://call.celesteai.ru/config.json
+```
+
+`config.json` must name `celesteai.ru` / `https://arcana.celesteai.ru`, not Element.
+
+Web client (`element-config.json`) is already pointed at this URL via `element_call.url`.
 
 ## Android push (Firebase / Sygnal)
 
