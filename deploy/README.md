@@ -91,6 +91,10 @@ homeserver → https://arcana.celesteai.ru/_matrix/push/v1/notify → FCM → Ar
 On the server, place the Firebase service account JSON at
 `deploy/sygnal/service-account.json` before starting Sygnal.
 
+Sygnal is started via `sygnal/patch_and_run.py` so FCM `SENDER_ID_MISMATCH`
+(stale tokens from the old Element Firebase project) is returned as a
+rejected pushkey instead of HTTP 502. The homeserver then drops that pusher.
+
 ## Important
 
 - `server_name` is set to `celesteai.ru`

@@ -51,11 +51,13 @@ services:
     restart: unless-stopped
     environment:
       SYGNAL_CONF: /sygnal/sygnal.yaml
+    entrypoint: ["python", "/sygnal/patch_and_run.py"]
     ports:
       - "127.0.0.1:5000:5000"
     volumes:
       - ./sygnal/sygnal.yaml:/sygnal/sygnal.yaml:ro
       - ./sygnal/service-account.json:/sygnal/service-account.json:ro
+      - ./sygnal/patch_and_run.py:/sygnal/patch_and_run.py:ro
 
   # Element Call / MatrixRTC: JWT exchange for LiveKit
   # LIVEKIT_KEY / LIVEKIT_SECRET must be set in repo-root .env (see .env.example).

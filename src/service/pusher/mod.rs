@@ -335,7 +335,7 @@ impl Service {
 		}
 
 		if notify == Some(true) {
-			self.send_notice(unread, pusher, tweaks, event).await?;
+			self.send_notice(user, unread, pusher, tweaks, event).await?;
 		}
 		// Else the event triggered no actions
 
@@ -387,6 +387,7 @@ impl Service {
 	#[tracing::instrument(skip(self, unread, pusher, tweaks, event))]
 	async fn send_notice<E>(
 		&self,
+		user: &UserId,
 		unread: UInt,
 		pusher: &Pusher,
 		tweaks: Vec<Tweak>,
@@ -491,8 +492,13 @@ impl Service {
 						.ok();
 				}
 
-				self.send_request(&http.url, send_event_notification::v1::Request::new(notify))
+				let response = self
+					.send_request(&http.url, send_event_notification::v1::Request::new(notify))
 					.await?;
+				for pushkey in &response.rejected {
+					warn!(%user, %pushkey, "Push gateway rejected pushkey, removing pusher");
+					self.delete_pusher(user, pushkey).await;
+				}
 
 				Ok(())
 			},
