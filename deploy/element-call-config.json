@@ -1,10 +1,4 @@
 {
-  "default_server_config": {
-    "m.homeserver": {
-      "base_url": "https://arcana.celesteai.ru",
-      "server_name": "celesteai.ru"
-    }
-  },
   "livekit": {
     "livekit_service_url": "https://arcana.celesteai.ru"
   },
