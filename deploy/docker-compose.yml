@@ -44,7 +44,7 @@ services:
       - ./well-known/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./well-known:/usr/share/nginx/html/.well-known:ro
 
-  # Matrix push gateway (FCM) for Arcana Android — routed via arcana.celesteai.ru/_matrix/push
+  # Matrix push gateway (FCM + APNs) — routed via arcana.celesteai.ru/_matrix/push
   sygnal:
     image: matrixdotorg/sygnal:latest
     container_name: arcana_sygnal
@@ -57,6 +57,8 @@ services:
     volumes:
       - ./sygnal/sygnal.yaml:/sygnal/sygnal.yaml:ro
       - ./sygnal/service-account.json:/sygnal/service-account.json:ro
+      - ./sygnal/apns.p8:/sygnal/apns.p8:ro
+      - ./sygnal/apns.env:/sygnal/apns.env:ro
       - ./sygnal/patch_and_run.py:/sygnal/patch_and_run.py:ro
 
   # Element Call / MatrixRTC: JWT exchange for LiveKit

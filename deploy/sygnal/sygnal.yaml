@@ -1,5 +1,10 @@
-# Sygnal — Matrix push gateway for Arcana (FCM v1)
+# Sygnal — Matrix push gateway for Arcana (FCM v1 + APNs)
 # Docs: https://github.com/matrix-org/sygnal
+#
+# Secrets (not in git):
+# - service-account.json  (Firebase)
+# - apns.p8               (Apple APNs Auth Key, renamed from AuthKey_*.p8)
+# - apns.env              (APNS_KEY_ID / APNS_TEAM_ID) — see apns.env.example
 
 http:
   bind_addresses: ["0.0.0.0"]
@@ -28,10 +33,30 @@ log:
       level: INFO
       handlers: [console]
 
-# app_id must match PushConfig.PUSHER_APP_ID in the Android client
+# app_id must match the client pusher app_id
+# APNS_KEY_ID / APNS_TEAM_ID are substituted by patch_and_run.py from apns.env
 apps:
+  # Android (Firebase)
   ru.celesteai.arcana:
     type: gcm
     api_version: v1
     project_id: arcana-celesteai
     service_account_file: /sygnal/service-account.json
+
+  # iOS App Store / TestFlight / Release
+  io.arcana.arcana.ios.prod:
+    type: apns
+    keyfile: /sygnal/apns.p8
+    key_id: ${APNS_KEY_ID}
+    team_id: ${APNS_TEAM_ID}
+    topic: io.arcana.arcana
+    platform: production
+
+  # iOS Debug builds from Xcode
+  io.arcana.arcana.ios.dev:
+    type: apns
+    keyfile: /sygnal/apns.p8
+    key_id: ${APNS_KEY_ID}
+    team_id: ${APNS_TEAM_ID}
+    topic: io.arcana.arcana
+    platform: sandbox

@@ -1,3 +1,7 @@
-# Never commit Firebase Admin SDK keys
+# Never commit push credentials
 service-account.json
 *-firebase-adminsdk-*.json
+apns.p8
+apns.env
+AuthKey_*.p8
+*.p8

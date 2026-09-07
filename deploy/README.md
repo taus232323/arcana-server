@@ -3,7 +3,7 @@
 This directory contains a deploy-ready setup for:
 
 - `arcana.celesteai.ru` -> Arcana client landing page and homeserver entrypoint
-- `arcana.celesteai.ru/_matrix/push` -> Sygnal (FCM push gateway for Arcana Android)
+- `arcana.celesteai.ru/_matrix/push` -> Sygnal (FCM + APNs push gateway for Arcana)
 - `arcana.celesteai.ru` LiveKit paths (`/rtc`, `/twirp`, `/sfu/get`, `/get_token`, `/healthz`) -> Element Call / MatrixRTC
 - `chat.celesteai.ru` -> Element Web
 - `call.celesteai.ru` -> self-hosted Element Call (not call.element.io)
@@ -28,8 +28,10 @@ The setup is designed for the current server layout on `celeste`:
 - `element-call-config.json` - self-hosted Element Call config (Arcana homeserver, not Element)
 - `well-known/nginx.conf` - static `.well-known` endpoints
 - `continuwuity-resolv.conf` - avoids Docker DNS federation issues
-- `sygnal/sygnal.yaml` - push gateway config (FCM v1)
+- `sygnal/sygnal.yaml` - push gateway config (FCM v1 + APNs; no Apple key id in git)
 - `sygnal/service-account.json` - Firebase Admin SDK key (**not in git**)
+- `sygnal/apns.p8` - Apple APNs Auth Key (**not in git**; copy from `AuthKey_*.p8`)
+- `sygnal/apns.env` - `APNS_KEY_ID` / `APNS_TEAM_ID` (**not in git**; copy from `apns.env.example`)
 - `livekit.yaml` - LiveKit SFU config (**not in git**; copy from `livekit.yaml.example`)
 
 ## LiveKit / calls setup
@@ -82,18 +84,34 @@ curl -sS https://call.celesteai.ru/config.json
 
 Web client (`element-config.json`) is already pointed at this URL via `element_call.url`.
 
-## Android push (Firebase / Sygnal)
+## Push (Firebase + APNs / Sygnal)
 
 ```
-homeserver → https://arcana.celesteai.ru/_matrix/push/v1/notify → FCM → Arcana
+homeserver → https://arcana.celesteai.ru/_matrix/push/v1/notify
+  ├─ FCM  → Arcana Android  (app_id: ru.celesteai.arcana)
+  └─ APNs → Arcana iOS      (app_id: io.arcana.arcana.ios.prod / .ios.dev)
 ```
 
-On the server, place the Firebase service account JSON at
-`deploy/sygnal/service-account.json` before starting Sygnal.
+On the server, before starting Sygnal place (never commit these):
+
+```bash
+# Firebase
+# deploy/sygnal/service-account.json
+
+# Apple APNs — rename the downloaded key, do not keep the Key ID in the filename
+cp /path/to/AuthKey_XXXXXXXX.p8 deploy/sygnal/apns.p8
+cp deploy/sygnal/apns.env.example deploy/sygnal/apns.env
+# edit apns.env: APNS_KEY_ID + APNS_TEAM_ID
+```
+
+If a Key ID / `AuthKey_*.p8` path was ever pushed to a public repo, revoke that
+key in Apple Developer → Keys and create a new one.
 
 Sygnal is started via `sygnal/patch_and_run.py` so FCM `SENDER_ID_MISMATCH`
 (stale tokens from the old Element Firebase project) is returned as a
 rejected pushkey instead of HTTP 502. The homeserver then drops that pusher.
+`patch_and_run.py` also expands `${APNS_KEY_ID}` / `${APNS_TEAM_ID}` from
+`apns.env` into the runtime config.
 
 ## Important
 
