@@ -13,8 +13,7 @@ use ruma::{
 	api::client::{
 		account::{
 			ThirdPartyIdRemovalStatus, change_password, check_registration_token_validity,
-			deactivate, get_username_availability, request_password_change_token_via_email,
-			whoami,
+			deactivate, get_username_availability, whoami,
 		},
 		uiaa::{AuthFlow, AuthType},
 	},
@@ -188,39 +187,98 @@ pub(crate) async fn change_password_route(
 	Ok(change_password::v3::Response {})
 }
 
+#[derive(Debug, Deserialize)]
+pub(crate) struct PasswordResetEmailRequestTokenRequest {
+	/// Linked email **or** login (localpart / MXID on this server).
+	pub email: String,
+	pub client_secret: String,
+	pub send_attempt: u32,
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) struct PasswordResetEmailRequestTokenResponse {
+	pub sid: String,
+	/// Resolved mailbox the code was sent to (so clients can show it after a login was entered).
+	pub email: String,
+}
+
 /// # `POST /_matrix/client/v3/account/password/email/requestToken`
 ///
 /// Requests a validation email for the purpose of resetting a user's password.
+///
+/// Arcana: `email` may be a real address **or** a localpart / MXID; the server
+/// resolves the associated mailbox the same way login does.
 pub(crate) async fn request_password_change_token_via_email_route(
 	State(services): State<crate::State>,
-	body: Ruma<request_password_change_token_via_email::v3::Request>,
-) -> Result<request_password_change_token_via_email::v3::Response> {
-	let Ok(email) = Address::try_from(body.email.clone()) else {
-		return Err!(Request(InvalidParam("Invalid email address.")));
-	};
+	Json(body): Json<PasswordResetEmailRequestTokenRequest>,
+) -> Result<Json<PasswordResetEmailRequestTokenResponse>> {
+	let client_secret = body
+		.client_secret
+		.parse::<OwnedClientSecret>()
+		.map_err(|_| err!(Request(InvalidParam("Invalid client_secret"))))?;
 
-	if services
-		.threepid
-		.get_localpart_for_email(<Address as AsRef<str>>::as_ref(&email))
-		.await
-		.is_none()
-	{
-		return Err!(Request(ThreepidNotFound(
-			"No account is associated with this email address"
-		)));
-	}
+	let email = email_for_password_reset(&services, &body.email).await?;
 
 	let session = services
 		.threepid
 		.send_validation_code_email(
-			Mailbox::new(None, email),
+			Mailbox::new(None, email.clone()),
 			|verification_code| messages::PasswordReset { verification_code },
-			&body.client_secret,
-			body.send_attempt.try_into().unwrap(),
+			&client_secret,
+			body.send_attempt,
 		)
 		.await?;
 
-	Ok(request_password_change_token_via_email::v3::Response::new(session))
+	Ok(Json(PasswordResetEmailRequestTokenResponse {
+		sid: session.to_string(),
+		email: <Address as AsRef<str>>::as_ref(&email).to_owned(),
+	}))
+}
+
+/// Resolve a password-reset identifier to the account mailbox.
+///
+/// Accepts a linked email, a localpart, or a full MXID on this server.
+async fn email_for_password_reset(services: &Services, identifier: &str) -> Result<Address> {
+	let identifier = identifier.trim();
+	if identifier.is_empty() {
+		return Err!(Request(InvalidParam("Email or login is required")));
+	}
+
+	if let Ok(email) = Address::try_from(identifier.to_owned()) {
+		if services
+			.threepid
+			.get_localpart_for_email(<Address as AsRef<str>>::as_ref(&email))
+			.await
+			.is_none()
+		{
+			return Err!(Request(ThreepidNotFound(
+				"No account is associated with this email address"
+			)));
+		}
+		return Ok(email);
+	}
+
+	let localpart = if let Ok(user_id) =
+		UserId::parse_with_server_name(identifier, services.globals.server_name())
+	{
+		user_id.localpart().to_owned()
+	} else {
+		return Err!(Request(InvalidParam("Email or login not recognized")));
+	};
+
+	let lowercased = localpart.to_lowercase();
+	if let Some(email) = services.threepid.get_email_for_localpart(&lowercased).await {
+		return Ok(email);
+	}
+	if lowercased != localpart {
+		if let Some(email) = services.threepid.get_email_for_localpart(&localpart).await {
+			return Ok(email);
+		}
+	}
+
+	Err!(Request(ThreepidNotFound(
+		"No account is associated with this login"
+	)))
 }
 
 #[derive(Debug, Deserialize)]
