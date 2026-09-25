@@ -25,12 +25,22 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     file
 
 # LLVM packages
+# Install from apt.llvm.org directly. The upstream llvm.sh helper currently
+# mis-detects Debian bookworm as unsupported (HEAD check fails) even though
+# llvm-toolchain-bookworm-${LLVM_VERSION} exists.
+ARG DEBIAN_VERSION=bookworm
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    curl https://apt.llvm.org/llvm.sh > llvm.sh && \
-    chmod +x llvm.sh && \
-    ./llvm.sh ${LLVM_VERSION} && \
-    rm llvm.sh
+    curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key \
+        -o /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \
+    printf 'deb http://apt.llvm.org/%s/ llvm-toolchain-%s-%s main\n' \
+        "${DEBIAN_VERSION}" "${DEBIAN_VERSION}" "${LLVM_VERSION}" \
+        > /etc/apt/sources.list.d/llvm-toolchain.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        clang-${LLVM_VERSION} \
+        lld-${LLVM_VERSION} \
+        llvm-${LLVM_VERSION}
 
 # Create symlinks for LLVM tools
 RUN <<EOF
