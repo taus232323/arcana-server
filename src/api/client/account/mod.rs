@@ -192,7 +192,7 @@ pub(crate) struct PasswordResetEmailRequestTokenRequest {
 	/// Linked email **or** login (localpart / MXID on this server).
 	pub email: String,
 	pub client_secret: String,
-	pub send_attempt: u32,
+	pub send_attempt: usize,
 }
 
 #[derive(Debug, Serialize)]
